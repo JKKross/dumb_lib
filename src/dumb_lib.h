@@ -598,7 +598,7 @@ PRIVATE_dumb_string_change_capacity(Dumb_String* str, size_t new_capacity)
 
 /* --- |FILE OPERATIONS IMPLEMENTATION| --- */
 
-#endif /* DUMB_STD_LIB_IMPLEMENTATION */
+#endif /* DUMB_LIB_IMPLEMENTATION */
 
 #ifdef __cplusplus
 } /* extern "C" */
