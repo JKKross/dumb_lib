@@ -250,7 +250,7 @@ void
 dumb_string_trim_whitespace(Dumb_String* str);
 
 void
-_dumb_string_change_capacity(Dumb_String* str, size_t new_capacity);
+PRIVATE_dumb_string_change_capacity(Dumb_String* str, size_t new_capacity);
 
 /* --- |RANDOM| --- */
 
@@ -454,7 +454,7 @@ dumb_string_push(Dumb_String* str, char c)
 */
 	if ((str->count + 1) == str->_capacity)
 	{
-		_dumb_string_change_capacity(str, (str->_capacity * 2));
+		PRIVATE_dumb_string_change_capacity(str, (str->_capacity * 2));
 	}
 	str->chars[str->count] = c;
 	str->count++;
@@ -493,7 +493,7 @@ dumb_string_append(Dumb_String* str_a, const char* str_b)
 */
 		if ((str_a->count + 1) == str_a->_capacity)
 		{
-			_dumb_string_change_capacity(str_a, (str_a->_capacity * 2));
+			PRIVATE_dumb_string_change_capacity(str_a, (str_a->_capacity * 2));
 		}
 		str_a->chars[str_a->count] = str_b[i];
 		str_a->count++;
@@ -578,7 +578,7 @@ dumb_string_trim_whitespace(Dumb_String* str)
 }
 
 void
-_dumb_string_change_capacity(Dumb_String* str, size_t new_capacity)
+PRIVATE_dumb_string_change_capacity(Dumb_String* str, size_t new_capacity)
 {
 	void* tmp = DUMB_ALLOC(new_capacity);
 
