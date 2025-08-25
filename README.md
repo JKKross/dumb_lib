@@ -2,8 +2,8 @@
 
 This is a single-file (or "header-only") MIT licensed library for C/C++,
 meant primarily for:
-	A) My personal use, as a "C extension"/my own "standart library"
-	B) My own learning purposes
++ A) My personal use, as a "C extension"/my own "standart library"
++ B) My own learning purposes
 
 That means that the library is still very much "under construction",
 and also, that I will most likely not accept any pull requests.
