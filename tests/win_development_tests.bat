@@ -25,6 +25,11 @@ echo.
 del /F /Q test.exe
 del /F /Q dumb_lib_tests.obj
 
+echo\
+REM If there's a NO_COMMIT tag anywhere in the code, we want to know
+rg "@NO_COMMIT" --ignore-case -g "!win_development_tests.bat"
+echo\
+
 @rem ...and back to Windows-1252
 chcp 1252
 timeout /t 120

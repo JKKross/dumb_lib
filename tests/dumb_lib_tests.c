@@ -330,7 +330,7 @@ string_split_by_char_test(void)
 	Dumb_String str = dumb_string_from("Hello there...\nThe name's Bond. James Bond.");
 	Dumb_Array strings = dumb_string_split_by_char(&str, ' ');
 
-	char* test_strings[] = {
+	char *test_strings[] = {
 	          "Hello",
 	          "there...\nThe",
 	          "name's",
@@ -344,7 +344,7 @@ string_split_by_char_test(void)
 	int i;
 	for (i = 0; i < strings.count; i++)
 	{
-		Dumb_String* ps = (Dumb_String*) dumb_array_get(&strings, i);
+		Dumb_String *ps = (Dumb_String *) dumb_array_get(&strings, i);
 		Dumb_String  s  = *ps;
 
 		int result = strcmp(s.chars, test_strings[i]);
