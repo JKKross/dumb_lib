@@ -108,7 +108,7 @@ All other files should just #include "dumb_lib.h" without the #define.
 
 
 You can #define DUMB_ASSERT(cond) before the #include to avoid using assert.h.
-You can #define ALLOC_CONTEXT, DUMB_ALLOC(context, size), and DUMB_FREE(context, ptr) to avoid using stdlib.h (malloc & free)
+You can #define DUMB_ALLOC_CONTEXT, DUMB_ALLOC(context, size), and DUMB_FREE(context, ptr) to avoid using stdlib.h (malloc & free)
 
 ============================================================================ */
 
@@ -168,15 +168,15 @@ extern "C" {
 	#define DUMB_ASSERT(cond) assert(cond)
 #endif
 
-#if defined(ALLOC_CONTEXT) && defined(DUMB_ALLOC) && defined(DUMB_FREE)
+#if defined(DUMB_ALLOC_CONTEXT) && defined(DUMB_ALLOC) && defined(DUMB_FREE)
 	/* OK */
-#elif !defined(ALLOC_CONTEXT) && !defined(DUMB_ALLOC) && !defined(DUMB_FREE)
+#elif !defined(DUMB_ALLOC_CONTEXT) && !defined(DUMB_ALLOC) && !defined(DUMB_FREE)
 	#include <stdlib.h>
-	#define ALLOC_CONTEXT              NULL
+	#define DUMB_ALLOC_CONTEXT         NULL
 	#define DUMB_ALLOC(context, size)  malloc(size)
 	#define DUMB_FREE(context, ptr)    free(ptr)
 #else
-	#error "You must define either both or none of DUMB_ALLOC, DUMB_FREE."
+	#error "You must define either all or none of DUMB_ALLOC_CONTEXT, DUMB_ALLOC & DUMB_FREE."
 #endif
 
 /* --- |TYPES| --- */
@@ -318,7 +318,7 @@ dumb_array_init_precise(size_t elem_size, size_t number_of_elems) {
 	a.count      = 0;
 	a._capacity  = elem_size * number_of_elems;
 	a._elem_size = elem_size;
-	a._elements  = DUMB_ALLOC(ALLOC_CONTEXT, a._capacity);
+	a._elements  = DUMB_ALLOC(&DUMB_ALLOC_CONTEXT, a._capacity);
 
 #ifdef DUMB_DEBUG
 	/* @NOTE: Maybe check always? */
@@ -339,7 +339,7 @@ dumb_array_free(Dumb_Array *a) {
 	DUMB_ASSERT(a->_elements != NULL);
 #endif
 
-	DUMB_FREE(ALLOC_CONTEXT, a->_elements);
+	DUMB_FREE(&DUMB_ALLOC_CONTEXT, a->_elements);
 	a->_elements = NULL;
 }
 
@@ -349,7 +349,7 @@ dumb_array_add(Dumb_Array *a, void *elem) {
 
 	if ((a->count * a->_elem_size) == a->_capacity) {
 		size_t new_capacity = a->_capacity * 2;
-		void *tmp = DUMB_ALLOC(ALLOC_CONTEXT, new_capacity);
+		void *tmp = DUMB_ALLOC(&DUMB_ALLOC_CONTEXT, new_capacity);
 
 #ifdef DUMB_DEBUG
 		/* @NOTE: Maybe check always? */
@@ -357,7 +357,7 @@ dumb_array_add(Dumb_Array *a, void *elem) {
 #endif
 
 		dumb_memcpy(tmp, a->_elements, a->_capacity);
-		DUMB_FREE(ALLOC_CONTEXT, a->_elements);
+		DUMB_FREE(&DUMB_ALLOC_CONTEXT, a->_elements);
 		a->_elements = tmp;
 		a->_capacity = new_capacity;
 	}
@@ -395,7 +395,7 @@ dumb_string_new_precise(size_t capacity) {
 
 	s.count     = 0;
 	s._capacity = capacity;
-	s.chars     = (char *) DUMB_ALLOC(ALLOC_CONTEXT, s._capacity);
+	s.chars     = (char *) DUMB_ALLOC(&DUMB_ALLOC_CONTEXT, s._capacity);
 /*
 	'malloc' doesn't initialize the memory,
 	so we do this to prevent weird interop issues with c strings.
@@ -434,8 +434,8 @@ dumb_string_free(Dumb_String *str) {
 	DUMB_ASSERT(str->chars != NULL);
 #endif
 
-	DUMB_FREE(ALLOC_CONTEXT, str->chars);
-	str->chars  = NULL;
+	DUMB_FREE(&DUMB_ALLOC_CONTEXT, str->chars);
+	str->chars = NULL;
 }
 
 void
@@ -578,7 +578,7 @@ dumb_string_compare(Dumb_String *str_a, Dumb_String *str_b) {
 
 void
 PRIVATE_dumb_string_change_capacity(Dumb_String *str, size_t new_capacity) {
-	void *tmp = DUMB_ALLOC(ALLOC_CONTEXT, new_capacity);
+	void *tmp = DUMB_ALLOC(&DUMB_ALLOC_CONTEXT, new_capacity);
 
 #ifdef DUMB_DEBUG
 	/* @NOTE: Maybe check always? */
@@ -587,7 +587,7 @@ PRIVATE_dumb_string_change_capacity(Dumb_String *str, size_t new_capacity) {
 
 	/* @NOTE: Should this be count? Or Min(new_capacity, str->_capacity)? */
 	dumb_memcpy(tmp, str->chars, str->_capacity);
-	DUMB_FREE(ALLOC_CONTEXT, str->chars);
+	DUMB_FREE(&DUMB_ALLOC_CONTEXT, str->chars);
 	str->chars = (char *) tmp;
 	str->_capacity = new_capacity;
 }
