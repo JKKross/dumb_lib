@@ -53,6 +53,7 @@ void string_new_push_pop_test(void);
 void string_utf8_test(void);
 void string_split_by_char_test(void);
 void string_trim_whitespace_test(void);
+void string_compare_test(void);
 
 int
 main(void) {
@@ -65,6 +66,7 @@ main(void) {
 	string_utf8_test();
 	string_split_by_char_test();
 	string_trim_whitespace_test();
+	string_compare_test();
 
 /*
 Dumb_String s = dumb_string_new();
@@ -371,6 +373,50 @@ string_trim_whitespace_test(void) {
 	DUMB_TEST((result != 0), passed);
 
 	dumb_string_free(&str);
+	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("\033[1;31mFAILED\033[0m\n"); }
+}
+
+void
+string_compare_test(void) {
+	int passed;
+	int result;
+	Dumb_String str_a;
+	Dumb_String str_b;
+
+	passed = 1;
+	printf("Running 'string_compare_test()'... ");
+
+	/* Part I: */
+	str_a = dumb_string_from("Hello, sailor!");
+	str_b = dumb_string_from("Hello, sailor!");
+
+	result = dumb_string_compare(&str_a, &str_b);
+	DUMB_TEST((result != 1), passed);
+
+	dumb_string_free(&str_a);
+	dumb_string_free(&str_b);
+
+	/* Part II: */
+	str_a = dumb_string_from("Hello, sailor!");
+	str_b = dumb_string_from("Hello, Sailor!");
+
+	result = dumb_string_compare(&str_a, &str_b);
+	DUMB_TEST((result != 0), passed);
+
+	dumb_string_free(&str_a);
+	dumb_string_free(&str_b);
+
+	/* Part III: */
+	str_a = dumb_string_from("Žluťoučký kůň skáče do dáli... 😊");
+	str_b = dumb_string_from("Žluťoučký kůň skáče do dáli... 😊");
+
+	result = dumb_string_compare(&str_a, &str_b);
+	DUMB_TEST((result != 1), passed);
+
+	dumb_string_free(&str_a);
+	dumb_string_free(&str_b);
+
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
 	else        { printf("\033[1;31mFAILED\033[0m\n"); }
 }

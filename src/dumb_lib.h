@@ -250,6 +250,17 @@ dumb_string_split_by_char(Dumb_String *str, char c);
 void
 dumb_string_trim_whitespace(Dumb_String *str);
 
+/*
+Returns 1 if the strings are the same, returns 0 if they differ.
+
+@NOTE: At least for now, this is a simple byte by byte comparison.
+Due to the nature of how UTF-8 strings can be encoded,
+two strings that appear identical to the reader may result
+in the function returning '0'.
+ */
+int
+dumb_string_compare(Dumb_String *str_a, Dumb_String *str_b);
+
 void
 PRIVATE_dumb_string_change_capacity(Dumb_String *str, size_t new_capacity);
 
@@ -546,6 +557,25 @@ dumb_string_trim_whitespace(Dumb_String *str) {
 
 	dumb_string_free(str);
 	dumb_memcpy(str, &new_string, sizeof(Dumb_String));
+}
+
+int
+dumb_string_compare(Dumb_String *str_a, Dumb_String *str_b) {
+	/* @NOTE: Should this function behave more like
+	   string comparison in Swift's stdlib? */
+	int result;
+
+	if (str_a->count != str_b->count) { return 0; }
+
+
+	result = dumb_memcmp((void *)str_a->chars,
+	                     (void *)str_b->chars,
+	                     str_a->count);
+
+	/* @NOTE: dumb_memcp returns 1 or -1
+	   if the memory differs and 0 if it's the same */
+	if (result == 0) { return 1; }
+	else             { return 0; }
 }
 
 void
