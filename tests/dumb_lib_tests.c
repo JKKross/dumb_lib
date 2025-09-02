@@ -55,8 +55,7 @@ void string_split_by_char_test(void);
 void string_trim_whitespace_test(void);
 
 int
-main(void)
-{
+main(void) {
 	array_add_get_test();
 	array_add_get_large_test();
 
@@ -78,8 +77,7 @@ printf("\n\n%s\n\n", s.chars);
 }
 
 void
-array_add_get_test(void)
-{
+array_add_get_test(void) {
 	int passed = 1;
 	printf("Running 'array_add_get_test()'... ");
 
@@ -92,8 +90,7 @@ array_add_get_test(void)
 	DUMB_TEST((a._elem_size != sizeof(i)), passed)
 	DUMB_TEST((a._elements == NULL), passed)
 
-	for (i = 0; i < 10; i++)
-	{
+	for (i = 0; i < 10; i++) {
 		int x = i * E;
 		dumb_array_add(&a, &x);
 		DUMB_TEST((a.count != (i + 1)), passed)
@@ -101,8 +98,7 @@ array_add_get_test(void)
 	}
 	DUMB_TEST((a._elements == NULL), passed)
 
-	for (i = 0; i < a.count; i++)
-	{
+	for (i = 0; i < a.count; i++) {
 		int *px = (int *) dumb_array_get(&a, i);
 		int x = *px;
 		DUMB_TEST((x != (i * E)), passed)
@@ -119,8 +115,7 @@ array_add_get_test(void)
 }
 
 void
-array_add_get_large_test(void)
-{
+array_add_get_large_test(void) {
 	int passed = 1;
 	printf("Running 'array_add_get_large_test()'... ");
 
@@ -132,13 +127,11 @@ array_add_get_large_test(void)
 	DUMB_TEST((a._elem_size != sizeof(i)), passed)
 	DUMB_TEST((a._elements == NULL), passed)
 
-	for (i = 0; i < C; i++)
-	{
+	for (i = 0; i < C; i++) {
 		int x = i;
 		dumb_array_add(&a, &x);
 	}
-	for (i = 0; i < a.count; i++)
-	{
+	for (i = 0; i < a.count; i++) {
 		int *px = (int *) dumb_array_get(&a, i);
 		int x = *px;
 		DUMB_TEST((x != i), passed)
@@ -157,8 +150,7 @@ array_add_get_large_test(void)
 }
 
 void
-string_from_test(void)
-{
+string_from_test(void) {
 	int passed = 1;
 	printf("Running 'string_from_test()'... ");
 
@@ -178,8 +170,7 @@ string_from_test(void)
 }
 
 void
-string_new_append_string_test(void)
-{
+string_new_append_string_test(void) {
 	int passed = 1;
 	printf("Running 'string_new_append_string_test()'... ");
 
@@ -212,8 +203,7 @@ string_new_append_string_test(void)
 }
 
 void
-string_new_push_pop_test(void)
-{
+string_new_push_pop_test(void) {
 	int passed = 1;
 	printf("Running 'string_new_push_pop_test()'... ");
 
@@ -263,8 +253,7 @@ string_new_push_pop_test(void)
 }
 
 void
-string_utf8_test(void)
-{
+string_utf8_test(void) {
 	int passed = 1;
 	printf("Running 'string_utf8_test()'... ");
 
@@ -312,8 +301,7 @@ string_utf8_test(void)
 #endif
 
 	int i;
-	for (i = 0; i < s.count; i++)
-	{
+	for (i = 0; i < s.count; i++) {
 		DUMB_TEST((s.chars[i] != codepoints[i]), passed);
 	}
 
@@ -322,8 +310,7 @@ string_utf8_test(void)
 }
 
 void
-string_split_by_char_test(void)
-{
+string_split_by_char_test(void) {
 	int passed = 1;
 	printf("Running 'string_split_by_char_test()'... ");
 
@@ -342,8 +329,7 @@ string_split_by_char_test(void)
 	dumb_string_free(&str);
 
 	int i;
-	for (i = 0; i < strings.count; i++)
-	{
+	for (i = 0; i < strings.count; i++) {
 		Dumb_String *ps = (Dumb_String *) dumb_array_get(&strings, i);
 		Dumb_String  s  = *ps;
 
@@ -359,8 +345,7 @@ string_split_by_char_test(void)
 }
 
 void
-string_trim_whitespace_test(void)
-{
+string_trim_whitespace_test(void) {
 	int passed = 1;
 	printf("Running 'string_trim_whitespace_test()'... ");
 
