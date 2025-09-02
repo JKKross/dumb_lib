@@ -182,16 +182,16 @@ extern "C" {
 /* --- |TYPES| --- */
 
 typedef struct Dumb_Array {
-	size_t count;
-	size_t _capacity;
-	size_t _elem_size;
-	void  *_elements;
+	size_t  count;
+	size_t  _capacity;
+	size_t  _elem_size;
+	void   *_elements;
 } Dumb_Array; /* @NOTE: Switch to macro approach? */
 
 typedef struct Dumb_String {
 	char   *chars;
-	size_t count;
-	size_t _capacity;
+	size_t  count;
+	size_t  _capacity;
 } Dumb_String;
 
 /* --- |MEMORY| --- */
@@ -292,8 +292,8 @@ dumb_memcpy(void *to, void *from, size_t num_bytes) {
 int
 dumb_memcmp(void *a, void *b, size_t num_bytes) {
 	size_t i;
-	char* aa = (char *) a;
-	char* bb = (char *) b;
+	char *aa = (char *) a;
+	char *bb = (char *) b;
 
 	for (i = 0; i < num_bytes; i++) {
 		if      (aa[i] > bb[i]) { return 1; }
@@ -301,8 +301,6 @@ dumb_memcmp(void *a, void *b, size_t num_bytes) {
 	}
 	return 0;
 }
-
-/* --- |LOGGING IMPLEMENTATION| --- */
 
 /* --- |ARRAY IMPLEMENTATION| --- */
 
@@ -520,10 +518,10 @@ dumb_string_split_by_char(Dumb_String *str, char c) {
 
 void
 dumb_string_trim_whitespace(Dumb_String *str) {
-	void *copy_to;
-	void *copy_from;
-	size_t count;
-	Dumb_String new_string;
+	void        *copy_to;
+	void        *copy_from;
+	size_t       count;
+	Dumb_String  new_string;
 
 	size_t low_index  = 0;
 	size_t high_index = str->count - 1;
@@ -549,7 +547,7 @@ dumb_string_trim_whitespace(Dumb_String *str) {
 	/* +1 because of how our strings work - see 'dumb_string_push' for details. */
 	new_string = dumb_string_new_precise(count + 1);
 
-	copy_to = (void *) new_string.chars;
+	copy_to   = (void *) new_string.chars;
 	copy_from = (void *) (str->chars + low_index);
 	dumb_memcpy(copy_to, copy_from, count);
 	new_string.count = count;
