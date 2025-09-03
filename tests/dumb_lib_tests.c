@@ -42,7 +42,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #define DUMB_LIB_IMPLEMENTATION
 #include "../src/dumb_lib.h"
 
-#define DUMB_TEST(cond, passed) if (cond) { passed = 0; printf("FAIL ON LINE %d; ", __LINE__); }
+#define DUMB_TEST(cond, passed) if (cond) { passed = 0; printf("FAIL ON LINE %d; ", __LINE__); abort(); }
 
 void array_add_get_test(void);
 void array_add_get_large_test(void);

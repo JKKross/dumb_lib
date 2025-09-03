@@ -216,7 +216,7 @@ void
 dumb_array_free(Dumb_Array *a);
 
 void
-dumb_array_add(Dumb_Array *a, void *elem);
+dumb_array_add(Dumb_Array *a, void *new_elem);
 
 void *
 dumb_array_get(Dumb_Array *a, size_t index);
@@ -344,8 +344,8 @@ dumb_array_free(Dumb_Array *a) {
 }
 
 void
-dumb_array_add(Dumb_Array *a, void *elem) {
-	char *from;
+dumb_array_add(Dumb_Array *a, void *new_elem) {
+	char *new_elem_destination;
 
 	if ((a->count * a->_elem_size) == a->_capacity) {
 		size_t new_capacity = a->_capacity * 2;
@@ -362,8 +362,8 @@ dumb_array_add(Dumb_Array *a, void *elem) {
 		a->_capacity = new_capacity;
 	}
 
-	from = (char *) a->_elements + (a->count * a->_elem_size);
-	dumb_memcpy(from, elem, a->_elem_size);
+	new_elem_destination = (char *) a->_elements + (a->count * a->_elem_size);
+	dumb_memcpy(new_elem_destination, new_elem, a->_elem_size);
 	a->count++;
 }
 
