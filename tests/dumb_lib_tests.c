@@ -57,6 +57,24 @@ void string_compare_test(void);
 
 int
 main(void) {
+
+	printf("PRINTING SIZES OF THE BASIC TYPES:\n");
+	printf("(just to make sure there are no surprises\n");
+	printf("when testing with a new compiler or on a new platform)\n");
+	printf("\n");
+	printf("sizeof(char)      = %zd\n", sizeof(char));
+	printf("sizeof(short)     = %zd\n", sizeof(short));
+	printf("sizeof(int)       = %zd\n", sizeof(int));
+	printf("sizeof(long)      = %zd\n", sizeof(long));
+	printf("sizeof(long long) = %zd\n", sizeof(long long));
+	printf("\n");
+	printf("sizeof(size_t)    = %zd\n", sizeof(size_t));
+	printf("sizeof(void *)    = %zd\n", sizeof(void *));
+	printf("\n");
+	printf("sizeof(float)     = %zd\n", sizeof(float));
+	printf("sizeof(double)    = %zd\n", sizeof(double));
+	printf("\n");
+
 	array_add_get_test();
 	array_add_get_large_test();
 
@@ -68,13 +86,6 @@ main(void) {
 	string_trim_whitespace_test();
 	string_compare_test();
 
-/*
-Dumb_String s = dumb_string_new();
-dumb_string_push(&s, 0b00000001);
-dumb_string_push(&s, 0b11111011);
-dumb_string_push(&s, 0b01011000);
-printf("\n\n%s\n\n", s.chars);
-*/
 	return 0;
 }
 

@@ -1,10 +1,10 @@
 /* ============================================================================
 
-dumb_lib.h - something like my personal "standart library"/"C extension".
+dumb_lib.h - something like my personal "standard library"/"C extension".
 
 ===============================================================================
 
-version 0.1
+version 0.2
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -19,7 +19,6 @@ https://x.com/honza_kriz_bass
 	|SECTION| - README
 	|SECTION| - NOTES
 	|SECTION| - DOCUMENTATION
-	|SECTION| - NOTES
 	|SECTION| - COMPILE OPTIONS
 	|SECTION| - COMPILE CHECKS
 	|SECTION| - INCLUDES
@@ -69,7 +68,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 This is a single-file (or "header-only") MIT licensed library for C/C++,
 meant primarily for:
-	A) My personal use, as a "C extension"/my own "standart library"
+	A) My personal use, as a "C extension"/my own "standard library"
 	B) My own learning purposes
 
 That means that the library is still very much "under construction",
@@ -81,18 +80,31 @@ TEST IT OUT YOURSELF AND TAKE THE "NO WARRANTY..." PART OF THE LICENSE SERIOUSLY
 
 (For this reason, I may never take this lib over the v1.0 mark - we'll see)
 
+===============================================================================
 
 	|SECTION| - NOTES
 	----------------------------
 
-If you're wondering why there are no "//" comments, it's because they are not part
-of the C89 standart. For rationale to comply with C89 see:
+- Originally, I pretty much tried to copy the stb libraries style (i.e. "define
+your own allocator" etc.), but since this library is meant basically just for
+my own use, I decided to make it more opinionated.
+
+Once again, that basically means: DO NOT USE THIS LIBRARY!
+Of course you are free to do so, or to read through the source, yank the parts
+you like out etc.
+
+
+- If you're wondering why there are no "//" comments, it's because they are not part
+of the C89 standard. For rationale to comply with C89 see:
 
 	https://www.dependablec.org/
 
-If you are wondering why I decided to use single-header style for the library, see:
+
+- If you are wondering why I decided to use single-header style for the library, see:
 
 	https://github.com/nothings/stb?tab=readme-ov-file#why-single-file-headers
+
+===============================================================================
 
 	|SECTION| - DOCUMENTATION
 	----------------------------
@@ -117,7 +129,7 @@ You can #define DUMB_ALLOC_CONTEXT, DUMB_ALLOC(context, size), and DUMB_FREE(con
 	---------------------------
 */
 
-#define DUMB_DEBUG
+#define DUMB_DEBUG 1
 
 /*
 	|SECTION| - COMPILE CHECKS
@@ -133,10 +145,6 @@ If you wish to proceed, read through the source & make sure everything works cor
 	|SECTION| - INCLUDES
 	--------------------
 */
-
-#ifdef DUMB_DEBUG
-	#include <stdio.h>
-#endif
 
 /*
 	|SECTION| - DECLARATIONS
@@ -201,8 +209,6 @@ dumb_memcpy(void *to, void *from, size_t num_bytes);
 
 int
 dumb_memcmp(void *a, void *b, size_t num_bytes);
-
-/* --- |LOGGING| --- */
 
 /* --- |ARRAY| --- */
 
