@@ -43,6 +43,16 @@ test.exe
 echo === Finished
 echo.
 
+echo === Compiling with 'tcc'...
+
+tcc dumb_lib_tests.c -o test.exe
+echo === Finished
+echo === Running the tests...
+
+test.exe
+echo === Finished
+echo.
+
 del /F /Q test.exe
 
 @rem ...and back to Windows-1252

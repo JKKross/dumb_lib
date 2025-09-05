@@ -124,7 +124,7 @@ You can #define DUMB_ALLOC_CONTEXT, DUMB_ALLOC(context, size), and DUMB_FREE(con
 	--------------------------
 */
 
-#if !(__GNUC__ || __CLANG__ || _MSC_VER)
+#if !(__GNUC__ || __CLANG__ || _MSC_VER || __TINYC__ )
 	#error YOU ARE USING A COMPILER THIS LIBRARY WAS NOT TESTED WITH! \
 If you wish to proceed, read through the source & make sure everything works correctly!
 #endif
