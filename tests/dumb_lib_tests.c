@@ -42,7 +42,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #define DUMB_LIB_IMPLEMENTATION
 #include "../src/dumb_lib.h"
 
-#define DUMB_TEST(cond, passed) if (cond) { passed = 0; printf("FAIL ON LINE %d; ", __LINE__); abort(); }
+#define DUMB_PRINT_FAILURE() { printf("\n\tFAIL ON LINE %d;\t", __LINE__); }
+
 
 void array_add_get_test(void);
 void array_add_get_large_test(void);
@@ -74,6 +75,8 @@ main(void) {
 	printf("sizeof(float)     = %zd\n", sizeof(float));
 	printf("sizeof(double)    = %zd\n", sizeof(double));
 	printf("\n");
+	printf("============================");
+	printf("\n\n");
 
 	array_add_get_test();
 	array_add_get_large_test();
@@ -98,30 +101,32 @@ array_add_get_test(void) {
 	int i;
 
 	Dumb_Array a = dumb_array_init(sizeof(i));
-	DUMB_TEST((a.count != 0), passed)
-	DUMB_TEST((a._capacity < a.count), passed)
-	DUMB_TEST((a._elem_size != sizeof(i)), passed)
-	DUMB_TEST((a._elements == NULL), passed)
+
+	if (a.count != 0)              { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._capacity < a.count)     { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._elem_size != sizeof(i)) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._elements == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	for (i = 0; i < 10; i++) {
 		int x = i * E;
 		dumb_array_add(&a, &x);
-		DUMB_TEST((a.count != (i + 1)), passed)
-		DUMB_TEST((a._capacity < a.count), passed)
+		if (a.count != (i + 1))    { passed = 0; DUMB_PRINT_FAILURE(); break; }
+		if (a._capacity < a.count) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
-	DUMB_TEST((a._elements == NULL), passed)
+	if (a._elements == NULL) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	for (i = 0; i < a.count; i++) {
 		int *px = (int *) dumb_array_get(&a, i);
 		int x = *px;
-		DUMB_TEST((x != (i * E)), passed)
+		if (x != (i * E)) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
-	DUMB_TEST((a._elements == NULL), passed)
+	if (a._elements == NULL) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_array_free(&a);
-	DUMB_TEST((a.count      != 0), passed)
-	DUMB_TEST((a._capacity  != 0), passed)
-	DUMB_TEST((a._elements  != NULL), passed)
+
+	if (a.count      != 0)    { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._capacity  != 0)    { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._elements  != NULL) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
 	else        { printf("\033[1;31mFAILED\033[0m\n"); }
@@ -135,10 +140,11 @@ array_add_get_large_test(void) {
 	#define C 1048576 /* 1024x1024 */
 	int i;
 	Dumb_Array a = dumb_array_init(sizeof(i));
-	DUMB_TEST((a.count != 0), passed)
-	DUMB_TEST((a._capacity < a.count), passed)
-	DUMB_TEST((a._elem_size != sizeof(i)), passed)
-	DUMB_TEST((a._elements == NULL), passed)
+
+	if (a.count != 0)              { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._capacity < a.count)     { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._elem_size != sizeof(i)) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._elements == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	for (i = 0; i < C; i++) {
 		int x = i;
@@ -147,16 +153,17 @@ array_add_get_large_test(void) {
 	for (i = 0; i < a.count; i++) {
 		int *px = (int *) dumb_array_get(&a, i);
 		int x = *px;
-		DUMB_TEST((x != i), passed)
+
+		if (x != i) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
-	DUMB_TEST((a.count      != C), passed)
-	DUMB_TEST((a._capacity  <  C), passed)
-	DUMB_TEST((a._elements  == NULL), passed)
+	if (a.count      != C)    { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._capacity   < C)    { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._elements  == NULL) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_array_free(&a);
-	DUMB_TEST((a.count      != 0), passed)
-	DUMB_TEST((a._capacity  != 0), passed)
-	DUMB_TEST((a._elements  != NULL), passed)
+	if (a.count      != 0)    { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._capacity  != 0)    { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._elements  != NULL) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
 	else        { printf("\033[1;31mFAILED\033[0m\n"); }
@@ -168,15 +175,16 @@ string_from_test(void) {
 	printf("Running 'string_from_test()'... ");
 
 	Dumb_String s = dumb_string_from("Hello, World!");
-	DUMB_TEST((s.chars == NULL), passed)
-	DUMB_TEST(strcmp(s.chars, "Hello, World!"), passed)
- 	DUMB_TEST((s.count != 13), passed)
- 	DUMB_TEST((s._capacity < s.count), passed)
+
+	if (s.chars == NULL)                  { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp(s.chars, "Hello, World!")) { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s.count != 13)                    { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_free(&s);
-	DUMB_TEST((s.chars != NULL), passed)
- 	DUMB_TEST((s.count != 0), passed)
- 	DUMB_TEST((s._capacity != 0), passed)
+	if (s.chars != NULL)  { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s.count != 0)     { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
 	else        { printf("\033[1;31mFAILED\033[0m\n"); }
@@ -188,28 +196,28 @@ string_new_append_string_test(void) {
 	printf("Running 'string_new_append_string_test()'... ");
 
 	Dumb_String s = dumb_string_new();
-	DUMB_TEST((s.chars == NULL), passed)
-	DUMB_TEST(strcmp(s.chars, ""), passed)
- 	DUMB_TEST((s.count != 0), passed)
- 	DUMB_TEST((s._capacity < s.count), passed)
+	if (s.chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s.count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_append(&s, "Hello");
-	DUMB_TEST(strcmp(s.chars, "Hello"), passed)
- 	DUMB_TEST((s.count != 5), passed)
- 	DUMB_TEST((s._capacity < s.count), passed)
+	if (strcmp(s.chars, "Hello")) { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s.count != 5)             { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s.count)    { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_append(&s, ", ");
-	DUMB_TEST(strcmp(s.chars, "Hello, "), passed)
- 	DUMB_TEST((s.count != 7), passed)
- 	DUMB_TEST((s._capacity < s.count), passed)
+	if (strcmp(s.chars, "Hello, ")) { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s.count != 7)               { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s.count)      { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_append(&s, "World!");
-	DUMB_TEST(strcmp(s.chars, "Hello, World!"), passed)
- 	DUMB_TEST((s.count != 13), passed)
- 	DUMB_TEST((s._capacity < s.count), passed)
+	if (strcmp(s.chars, "Hello, World!")) { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s.count != 13)                    { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s.count)            { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_free(&s);
-	DUMB_TEST((s.chars != NULL), passed)
+	if (s.chars != NULL) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
 	else        { printf("\033[1;31mFAILED\033[0m\n"); }
@@ -221,45 +229,45 @@ string_new_push_pop_test(void) {
 	printf("Running 'string_new_push_pop_test()'... ");
 
 	Dumb_String s = dumb_string_new();
-	DUMB_TEST((s.chars == NULL), passed)
-	DUMB_TEST(strcmp(s.chars, ""), passed)
- 	DUMB_TEST((s.count != 0), passed)
- 	DUMB_TEST((s._capacity < s.count), passed)
+	if (s.chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s.count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_push(&s, 'A');
-	DUMB_TEST(strcmp(s.chars, "A"), passed)
- 	DUMB_TEST((s.count != 1), passed)
- 	DUMB_TEST((s._capacity < s.count), passed)
+	if (strcmp(s.chars, "A"))  { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s.count != 1)          { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_push(&s, 'B');
-	DUMB_TEST(strcmp(s.chars, "AB"), passed)
- 	DUMB_TEST((s.count != 2), passed)
- 	DUMB_TEST((s._capacity < s.count), passed)
+	if (strcmp(s.chars, "AB")) { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s.count != 2)          { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_pop(&s);
-	DUMB_TEST(strcmp(s.chars, "A"), passed)
- 	DUMB_TEST((s.count != 1), passed)
- 	DUMB_TEST((s._capacity < s.count), passed)
+	if (strcmp(s.chars, "A"))  { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s.count != 1)          { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_pop(&s);
-	DUMB_TEST(strcmp(s.chars, ""), passed)
- 	DUMB_TEST((s.count != 0), passed)
- 	DUMB_TEST((s._capacity < s.count), passed)
+	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s.count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_pop(&s);
-	DUMB_TEST((s.chars == NULL), passed)
-	DUMB_TEST(strcmp(s.chars, ""), passed)
- 	DUMB_TEST((s.count != 0), passed)
- 	DUMB_TEST((s._capacity < s.count), passed)
+	if (s.chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s.count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_pop(&s);
-	DUMB_TEST((s.chars == NULL), passed)
-	DUMB_TEST(strcmp(s.chars, ""), passed)
- 	DUMB_TEST((s.count != 0), passed)
- 	DUMB_TEST((s._capacity < s.count), passed)
+	if (s.chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s.count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_free(&s);
-	DUMB_TEST((s.chars != NULL), passed)
+	if (s.chars != NULL) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
 	else        { printf("\033[1;31mFAILED\033[0m\n"); }
@@ -315,7 +323,7 @@ string_utf8_test(void) {
 
 	int i;
 	for (i = 0; i < s.count; i++) {
-		DUMB_TEST((s.chars[i] != codepoints[i]), passed);
+		if (s.chars[i] != codepoints[i]) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
 
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
@@ -347,7 +355,7 @@ string_split_by_char_test(void) {
 		Dumb_String  s  = *ps;
 
 		int result = strcmp(s.chars, test_strings[i]);
-		DUMB_TEST((result != 0), passed);
+		if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 
 		dumb_string_free(ps);
 	}
@@ -371,7 +379,7 @@ string_trim_whitespace_test(void) {
 	dumb_string_trim_whitespace(&str);
 
 	int result = strcmp(str.chars, "Hello, sailor!");
-	DUMB_TEST((result != 0), passed);
+	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_free(&str);
 
@@ -381,7 +389,7 @@ string_trim_whitespace_test(void) {
 	dumb_string_trim_whitespace(&str);
 
 	result = strcmp(str.chars, "");
-	DUMB_TEST((result != 0), passed);
+	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_free(&str);
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
@@ -403,7 +411,7 @@ string_compare_test(void) {
 	str_b = dumb_string_from("Hello, sailor!");
 
 	result = dumb_string_compare(&str_a, &str_b);
-	DUMB_TEST((result != 1), passed);
+	if (result != 1) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_free(&str_a);
 	dumb_string_free(&str_b);
@@ -413,7 +421,7 @@ string_compare_test(void) {
 	str_b = dumb_string_from("Hello, Sailor!");
 
 	result = dumb_string_compare(&str_a, &str_b);
-	DUMB_TEST((result != 0), passed);
+	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_free(&str_a);
 	dumb_string_free(&str_b);
@@ -423,7 +431,7 @@ string_compare_test(void) {
 	str_b = dumb_string_from("Žluťoučký kůň skáče do dáli... 😊");
 
 	result = dumb_string_compare(&str_a, &str_b);
-	DUMB_TEST((result != 1), passed);
+	if (result != 1) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_free(&str_a);
 	dumb_string_free(&str_b);
