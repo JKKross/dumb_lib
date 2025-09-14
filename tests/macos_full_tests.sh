@@ -74,3 +74,8 @@ echo '================================'
 
 rm ./TEST
 rm $path_cpp
+
+echo
+# If there's a NO_COMMIT tag anywhere in the code, we want to know
+rg "@NO_COMMIT" ../ --ignore-case -g "!*.bat" "!*.sh"
+echo
