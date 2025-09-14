@@ -4,7 +4,7 @@ dumb_lib_tests.c - tests for dumb_lib.h
 
 ===============================================================================
 
-version 0.1
+version 0.2.1
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -45,6 +45,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #define DUMB_PRINT_FAILURE() { printf("\n\tFAIL ON LINE %d;\t", __LINE__); }
 
 
+void arena_test(void);
+
 void array_add_get_test(void);
 void array_add_get_large_test(void);
 
@@ -78,6 +80,8 @@ main(void) {
 	printf("============================");
 	printf("\n\n");
 
+	arena_test();
+
 	array_add_get_test();
 	array_add_get_large_test();
 
@@ -90,6 +94,60 @@ main(void) {
 	string_compare_test();
 
 	return 0;
+}
+
+void
+arena_test(void)
+{
+	int passed;
+
+	int i;
+	Dumb_Arena arena;
+	char *str;
+
+	passed = 1;
+	printf("Running 'arena_test()'... ");
+
+	/* PART I: */
+	arena = dumb_arena_create(0);
+
+	if (arena._capacity != DUMB_ARENA_MIN_CAPACITY) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (arena._position != 0)                       { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	for (i = 0; i < arena._capacity; i++)
+	{
+		char current_byte = arena._memory[i];
+		if (current_byte != 0) { passed = 0; DUMB_PRINT_FAILURE(); break; }
+	}
+
+	/* PART II: */
+#define MAGICAL_VALUE (DUMB_ARENA_MIN_CAPACITY + 300)
+	str = (char *)dumb_arena_push(&arena, MAGICAL_VALUE);
+
+	if (arena._capacity <= MAGICAL_VALUE) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (arena._position != MAGICAL_VALUE) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	memcpy(str, "Hello, sailor!\n", 15);
+
+	if (memcmp("Hello, sailor!\n", str, 15) != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+
+	/* PART III: */
+	dumb_arena_pop(&arena, MAGICAL_VALUE);
+
+	if (arena._capacity  < (DUMB_ARENA_MIN_CAPACITY * 2)) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (arena._position != 0)                             { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (memcmp("Hello, sailor!\n", str, 15) == 0)         { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	/* PART IV: */
+	dumb_arena_destroy(&arena);
+
+	if (arena._capacity != 0)    { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (arena._position != 0)    { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (arena._memory   != NULL) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("\033[1;31mFAILED\033[0m\n"); }
 }
 
 void

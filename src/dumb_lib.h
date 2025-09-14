@@ -4,7 +4,7 @@ dumb_lib.h - something like my personal "standard library"/"C extension".
 
 ===============================================================================
 
-version 0.2
+version 0.2.1
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -118,10 +118,6 @@ include, like this:
 
 All other files should just #include "dumb_lib.h" without the #define.
 
-
-You can #define DUMB_ASSERT(cond) before the #include to avoid using assert.h.
-You can #define DUMB_ALLOC_CONTEXT, DUMB_ALLOC(context, size), and DUMB_FREE(context, ptr) to avoid using stdlib.h (malloc & free)
-
 ============================================================================ */
 
 /*
@@ -146,6 +142,9 @@ If you wish to proceed, read through the source & make sure everything works cor
 	--------------------
 */
 
+/* @NOTE(Honza): For malloc/calloc & free only! */
+#include <stdlib.h>
+
 /*
 	|SECTION| - DECLARATIONS
 	------------------------
@@ -158,6 +157,7 @@ extern "C" {
 /* --- |CONSTANTS| --- */
 
 /* Defaults */
+#define DUMB_ARENA_MIN_CAPACITY         1024
 #define DUMB_DEFAULT_ARRAY_SIZE         256
 #define DUMB_DEFAULT_STRING_SIZE_BYTES  32
 
@@ -171,30 +171,35 @@ extern "C" {
 
 /* --- |MACROS| --- */
 
-#ifndef DUMB_ASSERT
-	#include <assert.h>
-	#define DUMB_ASSERT(cond) assert(cond)
+#ifdef DUMB_DEBUG
+	/*
+	   @NOTE(Honza): If the assert fails, we crash, and can see where in a debugger.
+	   No need to get fancier - at least for now.
+	*/
+	#define DUMB_ASSERT(condition) if (!(condition)) { *(int *)0 = 0; }
+#else
+	/* Do nothing in release builds. */
+	#define DUMB_ASSERT(condition)
 #endif
 
-#if defined(DUMB_ALLOC_CONTEXT) && defined(DUMB_ALLOC) && defined(DUMB_FREE)
-	/* OK */
-#elif !defined(DUMB_ALLOC_CONTEXT) && !defined(DUMB_ALLOC) && !defined(DUMB_FREE)
-	#include <stdlib.h>
-	#define DUMB_ALLOC_CONTEXT         NULL
-	#define DUMB_ALLOC(context, size)  malloc(size)
-	#define DUMB_FREE(context, ptr)    free(ptr)
-#else
-	#error "You must define either all or none of DUMB_ALLOC_CONTEXT, DUMB_ALLOC & DUMB_FREE."
-#endif
+#define DUMB_ALLOC_CONTEXT NULL
+#define DUMB_ALLOC(context, size) malloc(size)
+#define DUMB_FREE(context, ptr) free(ptr)
 
 /* --- |TYPES| --- */
+
+typedef struct Dumb_Arena {
+	size_t  _capacity;
+	size_t  _position;
+	char   *_memory;
+} Dumb_Arena;
 
 typedef struct Dumb_Array {
 	size_t  count;
 	size_t  _capacity;
 	size_t  _elem_size;
 	void   *_elements;
-} Dumb_Array; /* @NOTE: Switch to macro approach? */
+} Dumb_Array; /* @NOTE(Honza): Switch to macro approach? */
 
 typedef struct Dumb_String {
 	char   *chars;
@@ -209,6 +214,18 @@ dumb_memcpy(void *to, void *from, size_t num_bytes);
 
 int
 dumb_memcmp(void *a, void *b, size_t num_bytes);
+
+Dumb_Arena
+dumb_arena_create(size_t size);
+
+void
+dumb_arena_destroy(Dumb_Arena *arena);
+
+void *
+dumb_arena_push(Dumb_Arena *arena, size_t size);
+
+void
+dumb_arena_pop(Dumb_Arena *arena, size_t size);
 
 /* --- |ARRAY| --- */
 
@@ -259,7 +276,7 @@ dumb_string_trim_whitespace(Dumb_String *str);
 /*
 Returns 1 if the strings are the same, returns 0 if they differ.
 
-@NOTE: At least for now, this is a simple byte by byte comparison.
+@NOTE(Honza): At least for now, this is a simple byte by byte comparison.
 Due to the nature of how UTF-8 strings can be encoded,
 two strings that appear identical to the reader may result
 in the function returning '0'.
@@ -308,6 +325,89 @@ dumb_memcmp(void *a, void *b, size_t num_bytes) {
 	return 0;
 }
 
+Dumb_Arena
+dumb_arena_create(size_t size)
+{
+	size_t capacity;
+	Dumb_Arena new_arena;
+
+	/*
+	   @NOTE(Honza): Is this a good idea?
+
+	   On one hand, in most situations, if you need
+	   less memory than DUMB_ARENA_MIN_CAPACITY,
+	   you might as well use the stack or malloc/calloc.
+
+	   On the other hand, this might be a surprise for the user.
+	*/
+	if (size < DUMB_ARENA_MIN_CAPACITY) { capacity = DUMB_ARENA_MIN_CAPACITY; }
+	else { capacity = size; }
+
+	new_arena._capacity = capacity;
+	new_arena._position = 0;
+	new_arena._memory   = (char *) calloc(capacity, sizeof(char));
+
+	DUMB_ASSERT(new_arena._memory != NULL)
+
+	return new_arena;
+}
+
+void
+dumb_arena_destroy(Dumb_Arena *arena)
+{
+	arena->_capacity = 0;
+	arena->_position = 0;
+	free(arena->_memory);
+	arena->_memory = NULL;
+}
+
+void *
+dumb_arena_push(Dumb_Arena *arena, size_t size)
+{
+	size_t old_position;
+	size_t new_position;
+
+	old_position = arena->_position;
+	new_position = arena->_position + size;
+
+	if (new_position > arena->_capacity)
+	{
+		char *buf;
+
+		arena->_capacity = arena->_capacity * 2;
+		buf = calloc(arena->_capacity, sizeof(char));
+
+		dumb_memcpy(buf, arena->_memory, old_position);
+
+		free(arena->_memory);
+
+		arena->_memory = buf;
+	}
+	arena->_position = new_position;
+	return arena->_memory + old_position;
+}
+
+void
+dumb_arena_pop(Dumb_Arena *arena, size_t size)
+{
+	size_t i;
+	size_t original_position;
+	size_t new_position;
+
+	/* @NOTE(Honza): Check always? */
+	DUMB_ASSERT(size <= arena->_position)
+
+	original_position = arena->_position;
+	new_position = original_position - size;
+
+	arena->_position = new_position;
+
+	for (i = arena->_position; i < original_position; i++)
+	{
+		arena->_memory[i] = 0;
+	}
+}
+
 /* --- |ARRAY IMPLEMENTATION| --- */
 
 Dumb_Array
@@ -326,10 +426,8 @@ dumb_array_init_precise(size_t elem_size, size_t number_of_elems) {
 	a._elem_size = elem_size;
 	a._elements  = DUMB_ALLOC(&DUMB_ALLOC_CONTEXT, a._capacity);
 
-#ifdef DUMB_DEBUG
-	/* @NOTE: Maybe check always? */
-	DUMB_ASSERT(a._elements != NULL);
-#endif
+	/* @NOTE(Honza): Maybe check always? */
+	DUMB_ASSERT(a._elements != NULL)
 
 	return a;
 }
@@ -340,10 +438,8 @@ dumb_array_free(Dumb_Array *a) {
 	a->count      = 0;
 	a->_elem_size = 0;
 
-#ifdef DUMB_DEBUG
-	/* @NOTE: Maybe check always? */
-	DUMB_ASSERT(a->_elements != NULL);
-#endif
+	/* @NOTE(Honza): Maybe check always? */
+	DUMB_ASSERT(a->_elements != NULL)
 
 	DUMB_FREE(&DUMB_ALLOC_CONTEXT, a->_elements);
 	a->_elements = NULL;
@@ -357,10 +453,8 @@ dumb_array_add(Dumb_Array *a, void *new_elem) {
 		size_t new_capacity = a->_capacity * 2;
 		void *tmp = DUMB_ALLOC(&DUMB_ALLOC_CONTEXT, new_capacity);
 
-#ifdef DUMB_DEBUG
-		/* @NOTE: Maybe check always? */
-		DUMB_ASSERT(tmp != NULL);
-#endif
+		/* @NOTE(Honza): Maybe check always? */
+		DUMB_ASSERT(tmp != NULL)
 
 		dumb_memcpy(tmp, a->_elements, a->_capacity);
 		DUMB_FREE(&DUMB_ALLOC_CONTEXT, a->_elements);
@@ -377,10 +471,8 @@ void *
 dumb_array_get(Dumb_Array *a, size_t index) {
 	char *result;
 
-#ifdef DUMB_DEBUG
-	/* @NOTE: Maybe check always? */
-	DUMB_ASSERT(index < a->count);
-#endif
+	/* @NOTE(Honza): Maybe check always? */
+	DUMB_ASSERT(index < a->count)
 
 	result = (char *) a->_elements + (index * a->_elem_size);
 	return (void *) result;
@@ -409,10 +501,8 @@ dumb_string_new_precise(size_t capacity) {
 */
 	s.chars[0]  = '\0';
 
-#ifdef DUMB_DEBUG
-	/* @NOTE: Maybe check always? */
-	DUMB_ASSERT(s.chars != NULL);
-#endif
+	/* @NOTE(Honza): Maybe check always? */
+	DUMB_ASSERT(s.chars != NULL)
 
 	return s;
 }
@@ -435,10 +525,8 @@ dumb_string_free(Dumb_String *str) {
 	str->_capacity = 0;
 	str->count     = 0;
 
-#ifdef DUMB_DEBUG
-	/* @NOTE: Maybe check always? */
-	DUMB_ASSERT(str->chars != NULL);
-#endif
+	/* @NOTE(Honza): Maybe check always? */
+	DUMB_ASSERT(str->chars != NULL)
 
 	DUMB_FREE(&DUMB_ALLOC_CONTEXT, str->chars);
 	str->chars = NULL;
@@ -447,7 +535,7 @@ dumb_string_free(Dumb_String *str) {
 void
 dumb_string_push(Dumb_String *str, char c) {
 /*
-	@NOTE: We do count + 1 because of compatibility with c-style
+	@NOTE(Honza): We do count + 1 because of compatibility with c-style
 	strings, which are ended by '\0'.
 	The count we provide for the end user is just the byte count
 	of the UTF-8 encoded string, so we need to check for +1 here.
@@ -457,7 +545,7 @@ dumb_string_push(Dumb_String *str, char c) {
 	}
 	str->chars[str->count] = c;
 	str->count++;
-	str->chars[str->count] = '\0'; /* @NOTE: see the comment at the top of the function. */
+	str->chars[str->count] = '\0'; /* @NOTE(Honza): see the comment at the top of the function. */
 }
 
 char
@@ -482,7 +570,7 @@ dumb_string_append(Dumb_String *str_a, const char *str_b) {
 
 	while (str_b[i] != '\0') {
 /*
-		@NOTE: We do count + 1 because of compatibility with c-style
+		@NOTE(Honza): We do count + 1 because of compatibility with c-style
 		strings, which are ended by '\0'.
 		The count we provide for the end user is just the byte count
 		of the UTF-8 encoded string, so we need to check for +1 here.
@@ -494,7 +582,7 @@ dumb_string_append(Dumb_String *str_a, const char *str_b) {
 		str_a->count++;
 		i++;
 	}
-	str_a->chars[str_a->count] = '\0'; /* @NOTE: see the comment at the top of the function. */
+	str_a->chars[str_a->count] = '\0'; /* @NOTE(Honza): see the comment at the top of the function. */
 }
 
 Dumb_Array
@@ -565,7 +653,7 @@ dumb_string_trim_whitespace(Dumb_String *str) {
 
 int
 dumb_string_compare(Dumb_String *str_a, Dumb_String *str_b) {
-	/* @NOTE: Should this function behave more like
+	/* @NOTE(Honza): Should this function behave more like
 	   string comparison in Swift's stdlib? */
 	int result;
 
@@ -576,7 +664,7 @@ dumb_string_compare(Dumb_String *str_a, Dumb_String *str_b) {
 	                     (void *)str_b->chars,
 	                     str_a->count);
 
-	/* @NOTE: dumb_memcp returns 1 or -1
+	/* @NOTE(Honza): dumb_memcp returns 1 or -1
 	   if the memory differs and 0 if it's the same */
 	if (result == 0) { return 1; }
 	else             { return 0; }
@@ -586,12 +674,10 @@ void
 PRIVATE_dumb_string_change_capacity(Dumb_String *str, size_t new_capacity) {
 	void *tmp = DUMB_ALLOC(&DUMB_ALLOC_CONTEXT, new_capacity);
 
-#ifdef DUMB_DEBUG
-	/* @NOTE: Maybe check always? */
-	DUMB_ASSERT(tmp != NULL);
-#endif
+	/* @NOTE(Honza): Maybe check always? */
+	DUMB_ASSERT(tmp != NULL)
 
-	/* @NOTE: Should this be count? Or Min(new_capacity, str->_capacity)? */
+	/* @NOTE(Honza): Should this be count? Or Min(new_capacity, str->_capacity)? */
 	dumb_memcpy(tmp, str->chars, str->_capacity);
 	DUMB_FREE(&DUMB_ALLOC_CONTEXT, str->chars);
 	str->chars = (char *) tmp;
