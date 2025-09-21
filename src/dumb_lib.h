@@ -313,23 +313,27 @@ PRIVATE_dumb_string_change_capacity(Dumb_Arena *arena, Dumb_String *str, size_t 
 /* --- |MEMORY IMPLEMENTATION| --- */
 
 void
-dumb_memcpy(void *to, void *from, size_t num_bytes) {
+dumb_memcpy(void *to, void *from, size_t num_bytes)
+{
 	size_t i;
 	char *to_char   = (char *) to;
 	char *from_char = (char *) from;
 
-	for (i = 0; i < num_bytes; i++) {
+	for (i = 0; i < num_bytes; i++)
+	{
 		to_char[i] = from_char[i];
 	}
 }
 
 int
-dumb_memcmp(void *a, void *b, size_t num_bytes) {
+dumb_memcmp(void *a, void *b, size_t num_bytes)
+{
 	size_t i;
 	char *aa = (char *) a;
 	char *bb = (char *) b;
 
-	for (i = 0; i < num_bytes; i++) {
+	for (i = 0; i < num_bytes; i++)
+	{
 		if      (aa[i] > bb[i]) { return 1; }
 		else if (aa[i] < bb[i]) { return -1; }
 	}
@@ -352,7 +356,7 @@ dumb_arena_create(size_t size)
 	   On the other hand, this might be a surprise for the user.
 	*/
 	if (size < DUMB_ARENA_MIN_CAPACITY) { capacity = DUMB_ARENA_MIN_CAPACITY; }
-	else { capacity = size; }
+	else                                { capacity = size; }
 
 	new_arena._capacity = capacity;
 	new_arena._position = 0;
@@ -434,12 +438,14 @@ dumb_arena_pop(Dumb_Arena *arena, size_t size)
 /* --- |ARRAY IMPLEMENTATION| --- */
 
 Dumb_Array
-dumb_array_init(Dumb_Arena *arena, size_t elem_size) {
+dumb_array_init(Dumb_Arena *arena, size_t elem_size)
+{
 	return dumb_array_init_precise(arena, elem_size, DUMB_DEFAULT_ARRAY_SIZE);
 }
 
 Dumb_Array
-dumb_array_init_precise(Dumb_Arena *arena, size_t elem_size, size_t number_of_elems) {
+dumb_array_init_precise(Dumb_Arena *arena, size_t elem_size, size_t number_of_elems)
+{
 	Dumb_Array a;
 
 	if (number_of_elems < 1) { number_of_elems = 1; }
@@ -456,13 +462,15 @@ dumb_array_init_precise(Dumb_Arena *arena, size_t elem_size, size_t number_of_el
 }
 
 void
-dumb_array_add(Dumb_Arena *arena, Dumb_Array *a, void *new_elem) {
+dumb_array_add(Dumb_Arena *arena, Dumb_Array *a, void *new_elem)
+{
 	char *new_elem_destination;
 
 	size_t  new_capacity;
 	char   *tmp;
 
-	if ((a->count * a->_elem_size) == a->_capacity) {
+	if ((a->count * a->_elem_size) == a->_capacity)
+	{
 		new_capacity = a->_capacity * 2;
 		tmp = dumb_arena_push(arena, new_capacity);
 
@@ -487,7 +495,8 @@ dumb_array_add(Dumb_Arena *arena, Dumb_Array *a, void *new_elem) {
 }
 
 void *
-dumb_array_get(Dumb_Array *a, size_t index) {
+dumb_array_get(Dumb_Array *a, size_t index)
+{
 	char *result;
 
 	/* @NOTE(Honza): Maybe check always? */
@@ -500,12 +509,14 @@ dumb_array_get(Dumb_Array *a, size_t index) {
 /* --- |STRING IMPLEMENTATION| --- */
 
 Dumb_String
-dumb_string_new(Dumb_Arena *arena) {
+dumb_string_new(Dumb_Arena *arena)
+{
 	return dumb_string_new_precise(arena, DUMB_DEFAULT_STRING_SIZE_BYTES);
 }
 
 Dumb_String
-dumb_string_new_precise(Dumb_Arena *arena, size_t capacity) {
+dumb_string_new_precise(Dumb_Arena *arena, size_t capacity)
+{
 	Dumb_String s;
 
 	if (capacity < 2) { capacity = 2; }
@@ -527,12 +538,14 @@ dumb_string_new_precise(Dumb_Arena *arena, size_t capacity) {
 }
 
 Dumb_String
-dumb_string_from(Dumb_Arena *arena, const char *str) {
+dumb_string_from(Dumb_Arena *arena, const char *str)
+{
 	Dumb_String s = dumb_string_new_precise(arena, DUMB_DEFAULT_STRING_SIZE_BYTES);
 
 	size_t i = 0;
 
-	while (str[i] != '\0') {
+	while (str[i] != '\0')
+	{
 		dumb_string_push(arena, &s, str[i]);
 		i++;
 	}
@@ -540,14 +553,16 @@ dumb_string_from(Dumb_Arena *arena, const char *str) {
 }
 
 void
-dumb_string_push(Dumb_Arena *arena, Dumb_String *str, char c) {
+dumb_string_push(Dumb_Arena *arena, Dumb_String *str, char c)
+{
 /*
 	@NOTE(Honza): We do count + 1 because of compatibility with c-style
 	strings, which are ended by '\0'.
 	The count we provide for the end user is just the byte count
 	of the UTF-8 encoded string, so we need to check for +1 here.
 */
-	if ((str->count + 1) == str->_capacity) {
+	if ((str->count + 1) == str->_capacity)
+	{
 		PRIVATE_dumb_string_change_capacity(arena, str, (str->_capacity * 2));
 	}
 	str->chars[str->count] = c;
@@ -556,7 +571,8 @@ dumb_string_push(Dumb_Arena *arena, Dumb_String *str, char c) {
 }
 
 char
-dumb_string_pop(Dumb_String *str) {
+dumb_string_pop(Dumb_String *str)
+{
 	char result;
 	size_t index;
 
@@ -572,17 +588,20 @@ dumb_string_pop(Dumb_String *str) {
 }
 
 void
-dumb_string_append(Dumb_Arena *arena, Dumb_String *str_a, const char *str_b) {
+dumb_string_append(Dumb_Arena *arena, Dumb_String *str_a, const char *str_b)
+{
 	size_t i = 0;
 
-	while (str_b[i] != '\0') {
+	while (str_b[i] != '\0')
+	{
 /*
 		@NOTE(Honza): We do count + 1 because of compatibility with c-style
 		strings, which are ended by '\0'.
 		The count we provide for the end user is just the byte count
 		of the UTF-8 encoded string, so we need to check for +1 here.
 */
-		if ((str_a->count + 1) == str_a->_capacity) {
+		if ((str_a->count + 1) == str_a->_capacity)
+		{
 			PRIVATE_dumb_string_change_capacity(arena, str_a, (str_a->_capacity * 2));
 		}
 		str_a->chars[str_a->count] = str_b[i];
@@ -593,21 +612,26 @@ dumb_string_append(Dumb_Arena *arena, Dumb_String *str_a, const char *str_b) {
 }
 
 Dumb_Array
-dumb_string_split_by_char(Dumb_Arena *arena, Dumb_String *str, char c) {
+dumb_string_split_by_char(Dumb_Arena *arena, Dumb_String *str, char c)
+{
 	Dumb_Array  result = dumb_array_init(arena, sizeof(Dumb_String));
 	Dumb_String buf    = dumb_string_new(arena);
 
 	size_t i;
 
-	for (i = 0; i < str->count; i++) {
+	for (i = 0; i < str->count; i++)
+	{
 		char current = str->chars[i];
 
-		if (current == c) {
+		if (current == c)
+		{
 			Dumb_String buf_2 = dumb_string_from(arena, buf.chars);
 			dumb_array_add(arena, &result, &buf_2);
 
 			buf = dumb_string_new(arena);
-		} else {
+		}
+		else
+		{
 			dumb_string_push(arena, &buf, current);
 		}
 	}
@@ -617,7 +641,8 @@ dumb_string_split_by_char(Dumb_Arena *arena, Dumb_String *str, char c) {
 }
 
 void
-dumb_string_trim_whitespace(Dumb_Arena *arena, Dumb_String *str) {
+dumb_string_trim_whitespace(Dumb_Arena *arena, Dumb_String *str)
+{
 	void        *copy_to;
 	void        *copy_from;
 	size_t       count;
@@ -626,18 +651,21 @@ dumb_string_trim_whitespace(Dumb_Arena *arena, Dumb_String *str) {
 	size_t low_index  = 0;
 	size_t high_index = str->count - 1;
 
-	while ((low_index < str->count) && (str->chars[low_index] <= 0x20)) {
+	while ((low_index < str->count) && (str->chars[low_index] <= 0x20))
+	{
 		low_index++;
 	}
 
-	if (low_index >= str->count) {
+	if (low_index >= str->count)
+	{
 		Dumb_String empty = dumb_string_new(arena);
 
 		dumb_memcpy(str, &empty, sizeof(Dumb_String));
 		return;
 	}
 
-	while ((high_index > low_index) && (str->chars[high_index] <= 0x20)) {
+	while ((high_index > low_index) && (str->chars[high_index] <= 0x20))
+	{
 		high_index--;
 	}
 
@@ -656,7 +684,8 @@ dumb_string_trim_whitespace(Dumb_Arena *arena, Dumb_String *str) {
 }
 
 int
-dumb_string_compare(Dumb_String *str_a, Dumb_String *str_b) {
+dumb_string_compare(Dumb_String *str_a, Dumb_String *str_b)
+{
 	/* @NOTE(Honza): Should this function behave more like
 	   string comparison in Swift's stdlib? */
 	int result;
@@ -675,7 +704,8 @@ dumb_string_compare(Dumb_String *str_a, Dumb_String *str_b) {
 }
 
 void
-PRIVATE_dumb_string_change_capacity(Dumb_Arena *arena, Dumb_String *str, size_t new_capacity) {
+PRIVATE_dumb_string_change_capacity(Dumb_Arena *arena, Dumb_String *str, size_t new_capacity)
+{
 	void *tmp = dumb_arena_push(arena, new_capacity);
 
 	/* @NOTE(Honza): Maybe check always? */

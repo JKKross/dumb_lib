@@ -157,7 +157,8 @@ arena_test(void)
 }
 
 void
-array_add_get_test(void) {
+array_add_get_test(void)
+{
 	int passed;
 
 	#define E 2
@@ -177,17 +178,21 @@ array_add_get_test(void) {
 	if (a._elem_size != sizeof(i)) { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._elements == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
 
-	for (i = 0; i < 10; i++) {
+	for (i = 0; i < 10; i++)
+	{
 		int x = i * E;
 		dumb_array_add(&arena, &a, &x);
+
 		if (a.count != (i + 1))    { passed = 0; DUMB_PRINT_FAILURE(); break; }
 		if (a._capacity < a.count) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
 	if (a._elements == NULL) { passed = 0; DUMB_PRINT_FAILURE(); }
 
-	for (i = 0; i < a.count; i++) {
+	for (i = 0; i < a.count; i++)
+	{
 		int *px = (int *) dumb_array_get(&a, i);
 		int x = *px;
+
 		if (x != (i * E)) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
 	if (a._elements == NULL) { passed = 0; DUMB_PRINT_FAILURE(); }
@@ -199,7 +204,8 @@ array_add_get_test(void) {
 }
 
 void
-array_add_get_large_test(void) {
+array_add_get_large_test(void)
+{
 	int passed;
 
 	#define COUNT 1048576 /* 1024x1024 */
@@ -245,7 +251,8 @@ array_add_get_large_test(void) {
 }
 
 void
-string_from_test(void) {
+string_from_test(void)
+{
 	int passed;
 
 	Dumb_Arena arena;
@@ -269,7 +276,8 @@ string_from_test(void) {
 }
 
 void
-string_new_append_string_test(void) {
+string_new_append_string_test(void)
+{
 	int passed;
 
 	Dumb_Arena arena;
@@ -308,7 +316,8 @@ string_new_append_string_test(void) {
 }
 
 void
-string_new_push_pop_test(void) {
+string_new_push_pop_test(void)
+{
 	int passed;
 
 	Dumb_Arena arena;
@@ -365,7 +374,8 @@ string_new_push_pop_test(void) {
 }
 
 void
-string_utf8_test(void) {
+string_utf8_test(void)
+{
 	int passed;
 
 	Dumb_Arena arena;
@@ -420,7 +430,8 @@ string_utf8_test(void) {
 	                    };
 #endif
 
-	for (i = 0; i < s.count; i++) {
+	for (i = 0; i < s.count; i++)
+	{
 		if (s.chars[i] != codepoints[i]) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
 
@@ -431,7 +442,8 @@ string_utf8_test(void) {
 }
 
 void
-string_split_by_char_test(void) {
+string_split_by_char_test(void)
+{
 	int passed;
 
 	Dumb_Arena arena;
@@ -458,7 +470,8 @@ string_split_by_char_test(void) {
 		"Bond.",
 	};
 
-	for (i = 0; i < strings.count; i++) {
+	for (i = 0; i < strings.count; i++)
+	{
 		Dumb_String *ps = (Dumb_String *) dumb_array_get(&strings, i);
 		Dumb_String  s  = *ps;
 
@@ -473,7 +486,8 @@ string_split_by_char_test(void) {
 }
 
 void
-string_trim_whitespace_test(void) {
+string_trim_whitespace_test(void)
+{
 	int passed;
 
 	Dumb_Arena arena;
@@ -510,7 +524,8 @@ string_trim_whitespace_test(void) {
 }
 
 void
-string_compare_test(void) {
+string_compare_test(void)
+{
 	int passed;
 
 	Dumb_Arena arena;

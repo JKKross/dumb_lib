@@ -27,7 +27,7 @@ of the C89 standart. For rationale to comply with C89 see [Dependable C](https:/
 
 ### Tested on
 
-[2025/09/05]
+[2025/09/21]
 #### Windows 11:
 - [x] Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35213 for x64
 - [x] clang version 18.1.8 (Target: x86\_64-pc-windows-msvc)
