@@ -4,7 +4,7 @@ dumb_lib_tests.c - tests for dumb_lib.h
 
 ===============================================================================
 
-version 0.2.4
+version 0.3.0
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -505,7 +505,7 @@ string_trim_whitespace_test(void)
 	dumb_string_push(&arena, &str, '\n');
 	dumb_string_push(&arena, &str, ' ');
 
-	dumb_string_trim_whitespace(&arena, &str);
+	dumb_string_trim_whitespace(&str);
 
 	int result = strcmp(str.chars, "Hello, sailor!");
 	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
@@ -513,7 +513,7 @@ string_trim_whitespace_test(void)
 	/* Part II: */
 	str = dumb_string_new(&arena);
 
-	dumb_string_trim_whitespace(&arena, &str);
+	dumb_string_trim_whitespace(&str);
 
 	result = strcmp(str.chars, "");
 	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }

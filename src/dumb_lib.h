@@ -4,7 +4,7 @@ dumb_lib.h - something like my personal "standard library"/"C extension".
 
 ===============================================================================
 
-version 0.2.4
+version 0.3.0
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -287,7 +287,7 @@ Dumb_Array
 dumb_string_split_by_char(Dumb_Arena *arena, Dumb_String *str, char c);
 
 void
-dumb_string_trim_whitespace(Dumb_Arena *arena, Dumb_String *str);
+dumb_string_trim_whitespace(Dumb_String *str);
 
 /*
 Returns 1 if the strings are the same, returns 0 if they differ.
@@ -646,28 +646,16 @@ dumb_string_split_by_char(Dumb_Arena *arena, Dumb_String *str, char c)
 }
 
 void
-dumb_string_trim_whitespace(Dumb_Arena *arena, Dumb_String *str)
+dumb_string_trim_whitespace(Dumb_String *str)
 {
-	/* @TODO(Honza): This function should not need to create new strings. */
-	void        *copy_to;
-	void        *copy_from;
-	size_t       count;
-	Dumb_String  new_string;
+	size_t low_index, high_index;
 
-	size_t low_index  = 0;
-	size_t high_index = str->count - 1;
+	low_index = 0;
+	high_index = str->count;
 
 	while ((low_index < str->count) && (str->chars[low_index] <= 0x20))
 	{
 		low_index++;
-	}
-
-	if (low_index >= str->count)
-	{
-		Dumb_String empty = dumb_string_new(arena);
-
-		dumb_memcpy(str, &empty, sizeof(Dumb_String));
-		return;
 	}
 
 	while ((high_index > low_index) && (str->chars[high_index] <= 0x20))
@@ -675,18 +663,10 @@ dumb_string_trim_whitespace(Dumb_Arena *arena, Dumb_String *str)
 		high_index--;
 	}
 
-	/* +1 because indices */
-	count = high_index - low_index + 1;
-	/* +1 because of how our strings work - see 'dumb_string_push' for details. */
-	new_string = dumb_string_new_precise(arena, (count + 1));
-
-	copy_to   = (void *) new_string.chars;
-	copy_from = (void *) (str->chars + low_index);
-	dumb_memcpy(copy_to, copy_from, count);
-	new_string.count = count;
-	new_string.chars[count] = '\0';
-
-	dumb_memcpy(str, &new_string, sizeof(Dumb_String));
+	str->count = high_index - low_index + 1;
+	dumb_memcpy(str->chars, (str->chars + low_index), str->count);
+	/* @NOTE(Honza): Should I set the next bytes to 0 as well? */
+	str->chars[str->count] = '\0';
 }
 
 int
