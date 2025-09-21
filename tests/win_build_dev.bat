@@ -15,42 +15,10 @@ rmdir /S /Q build
 mkdir build
 pushd build
 
-echo === Compiling with 'cl'...
-cl /utf-8 /validate-charset /nologo ..\dumb_lib_tests.c /Fetest.exe
-echo === Finished
-echo === Running the tests...
-
-test.exe
-echo === Finished
-echo.
-
-echo === Compiling with 'clang'...
-
-clang -std=c89 ..\dumb_lib_tests.c -o test.exe
-echo === Finished
-echo === Running the tests...
-
-test.exe
-echo === Finished
-echo.
-
-echo === Compiling with 'gcc'...
-
-gcc -std=c89 ..\dumb_lib_tests.c -o test.exe
-echo === Finished
-echo === Running the tests...
-
-test.exe
-echo === Finished
-echo.
-
-echo === Compiling with 'tcc'...
-
-tcc ..\dumb_lib_tests.c -o test.exe
-echo === Finished
-echo === Running the tests...
-
-test.exe
+echo === Compiling...
+cl /Zi /utf-8 /validate-charset /nologo /Wall ..\dumb_lib_tests.c /Fetest.exe
+REM clang -std=c89 -Weverything ..\dumb_lib_tests.c -o test.exe
+REM gcc -std=c89 -Wall ..\dumb_lib_tests.c -o test.exe
 echo === Finished
 echo.
 
@@ -63,4 +31,3 @@ echo\
 
 @rem ...and back to Windows-1252
 chcp 1252
-timeout /t 60
