@@ -4,7 +4,7 @@ dumb_lib_tests.c - tests for dumb_lib.h
 
 ===============================================================================
 
-version 0.2.3
+version 0.2.4
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -208,7 +208,7 @@ array_add_get_large_test(void)
 {
 	int passed;
 
-	#define COUNT 1048576 /* 1024x1024 */
+	#define COUNT DUMB_MB(300)
 	int i;
 	int x;
 
@@ -218,7 +218,8 @@ array_add_get_large_test(void)
 	printf("Running 'array_add_get_large_test()'... ");
 
 	passed = 1;
-	arena = dumb_arena_create(COUNT);
+	/* Intentionally 0, to stress-test the arena implementation */
+	arena = dumb_arena_create(0);
 
 	a = dumb_array_init_precise(&arena, sizeof(i), COUNT);
 	if (a.count != 0)              { passed = 0; DUMB_PRINT_FAILURE(); }

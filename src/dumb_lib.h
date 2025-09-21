@@ -4,7 +4,7 @@ dumb_lib.h - something like my personal "standard library"/"C extension".
 
 ===============================================================================
 
-version 0.2.3
+version 0.2.4
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -157,9 +157,9 @@ extern "C" {
 /* --- |CONSTANTS| --- */
 
 /* Defaults */
-#define DUMB_ARENA_MIN_CAPACITY         1024
-#define DUMB_DEFAULT_ARRAY_SIZE         256
-#define DUMB_DEFAULT_STRING_SIZE_BYTES  32
+#define DUMB_ARENA_MIN_CAPACITY         4096 /* Memory page size on most computers in 2025 */
+#define DUMB_DEFAULT_ARRAY_SIZE         256  /* No reason so far */
+#define DUMB_DEFAULT_STRING_SIZE_BYTES  32   /* No reason so far */
 
 /* Math constants */
 #define DUMB_PI   3.14159265358979323846
@@ -181,6 +181,11 @@ extern "C" {
 	/* Do nothing in release builds. */
 	#define DUMB_ASSERT(condition)
 #endif
+
+#define DUMB_KB(n)  (n * 1024)
+#define DUMB_MB(n)  (n * 1048576)
+#define DUMB_GB(n)  (n * 1073741824)
+#define DUMB_TB(n)  (n * 1099511627776)
 
 /* --- |TYPES| --- */
 
@@ -643,6 +648,7 @@ dumb_string_split_by_char(Dumb_Arena *arena, Dumb_String *str, char c)
 void
 dumb_string_trim_whitespace(Dumb_Arena *arena, Dumb_String *str)
 {
+	/* @TODO(Honza): This function should not need to create new strings. */
 	void        *copy_to;
 	void        *copy_from;
 	size_t       count;
