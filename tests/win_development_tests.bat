@@ -11,25 +11,29 @@ call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build
 
 cd %pat_dir%
 
+rmdir /S /Q build
+mkdir build
+pushd build
+
 echo === Compiling...
-cl /nologo /Wall dumb_lib_tests.c /Fetest.exe
+cl /Zi /utf-8 /validate-charset /nologo /Wall ..\dumb_lib_tests.c /Fetest.exe
 REM clang -std=c89 -Weverything dumb_lib_tests.c -o test.exe
 REM gcc -std=c89 -Wall dumb_lib_tests.c -o test.exe
 echo === Finished
 echo === Running the tests...
 
 test.exe
+
 echo === Finished
 echo.
 
-del /F /Q test.exe
-del /F /Q dumb_lib_tests.obj
+popd
 
 echo\
 REM If there's a NO_COMMIT tag anywhere in the code, we want to know
-rg "@NO_COMMIT" ../ --ignore-case -g "!win_development_tests.bat"
+rg "@NO_COMMIT" ../ --ignore-case -g "!*.bat" -g "!*.sh"
+
 echo\
 
 @rem ...and back to Windows-1252
 chcp 1252
-timeout /t 120
