@@ -4,7 +4,7 @@ dumb_lib.h - something like my personal "standard library"/"C extension".
 
 ===============================================================================
 
-version 0.2.2
+version 0.2.3
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -183,6 +183,27 @@ extern "C" {
 #endif
 
 /* --- |TYPES| --- */
+
+/*
+   To ensure maximum portability of the library,
+   none of these basic typedef'd types are used in the
+   implementation of dumb_lib's functionality.
+
+   They are here just to make my life easier
+   when using dumb_lib in a project.
+*/
+typedef char                s8;
+typedef short               s16;
+typedef long                s32;
+typedef long long           s64;
+
+typedef unsigned char       u8;
+typedef unsigned short      u16;
+typedef unsigned long       u32;
+typedef unsigned long long  u64;
+
+typedef float               f32;
+typedef double              f64;
 
 typedef struct Dumb_Arena {
 	size_t  _capacity;

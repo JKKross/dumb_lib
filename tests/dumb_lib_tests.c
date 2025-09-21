@@ -4,7 +4,7 @@ dumb_lib_tests.c - tests for dumb_lib.h
 
 ===============================================================================
 
-version 0.2.2
+version 0.2.3
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -44,6 +44,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #define DUMB_PRINT_FAILURE() { printf("\n\tFAIL ON LINE %d;\t", __LINE__); }
 
+void type_size_test(void);
 
 void arena_test(void);
 
@@ -59,26 +60,9 @@ void string_trim_whitespace_test(void);
 void string_compare_test(void);
 
 int
-main(void) {
-
-	printf("PRINTING SIZES OF THE BASIC TYPES:\n");
-	printf("(just to make sure there are no surprises\n");
-	printf("when testing with a new compiler or on a new platform)\n");
-	printf("\n");
-	printf("sizeof(char)      = %zd\n", sizeof(char));
-	printf("sizeof(short)     = %zd\n", sizeof(short));
-	printf("sizeof(int)       = %zd\n", sizeof(int));
-	printf("sizeof(long)      = %zd\n", sizeof(long));
-	printf("sizeof(long long) = %zd\n", sizeof(long long));
-	printf("\n");
-	printf("sizeof(size_t)    = %zd\n", sizeof(size_t));
-	printf("sizeof(void *)    = %zd\n", sizeof(void *));
-	printf("\n");
-	printf("sizeof(float)     = %zd\n", sizeof(float));
-	printf("sizeof(double)    = %zd\n", sizeof(double));
-	printf("\n");
-	printf("============================");
-	printf("\n\n");
+main(void)
+{
+	type_size_test();
 
 	arena_test();
 
@@ -94,6 +78,32 @@ main(void) {
 	string_compare_test();
 
 	return 0;
+}
+
+void
+type_size_test(void)
+{
+	int passed;
+
+	printf("Running 'type_size_test()'... ");
+
+	passed = 1;
+
+	if (sizeof(s8)  != 1) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (sizeof(s16) != 2) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (sizeof(s32) != 4) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (sizeof(s64) != 8) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	if (sizeof(u8)  != 1) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (sizeof(u16) != 2) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (sizeof(u32) != 4) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (sizeof(u64) != 8) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	if (sizeof(f32) != 4) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (sizeof(f64) != 8) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("\033[1;31mFAILED\033[0m\n"); }
 }
 
 void
