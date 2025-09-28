@@ -1,11 +1,11 @@
 #!/bin/sh
 
 echo '==> Compiling...'
-clang -std=c89 -Weverything dumb_lib_tests.c -o TEST
+clang -std=c89 -Weverything dumb_lib_tests.c -o build/TEST
 echo '==> Finished'
 echo '==> Running the tests...'
-./TEST
-rm ./TEST
+./build/TEST
+rm ./build/TEST
 echo '==> Finished'
 
 echo

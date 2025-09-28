@@ -2,6 +2,7 @@
 
 path="dumb_lib_tests.c"
 path_cpp="dumb_lib_tests.cpp"
+output_path="./build/TEST"
 
 echo '====================='
 echo '====== C tests ======'
@@ -9,28 +10,28 @@ echo '====================='
 
 echo
 echo '==> Compiling with "clang"...'
-clang -std=c89 $path -o TEST
+clang -std=c89 $path -o $output_path
 echo '==> Finished'
 echo '==> Running the tests...'
-./TEST
+$output_path
 echo '==> Finished'
 echo
 echo
 
 echo '==> Compiling with "gcc"...'
-gcc -std=c89 $path -o TEST
+gcc -std=c89 $path -o $output_path
 echo '==> Finished'
 echo '==> Running the tests...'
-./TEST
+$output_path
 echo '==> Finished'
 echo
 echo
 
 echo '==> Compiling with "tcc"...'
-tcc $path -o TEST
+tcc $path -o $output_path
 echo '==> Finished'
 echo '==> Running the tests...'
-./TEST
+$output_path
 echo '==> Finished'
 echo
 echo
@@ -51,19 +52,19 @@ echo '======================='
 
 echo
 echo '==> Compiling with "clang"...'
-clang $path_cpp -o TEST
+clang $path_cpp -o $output_path
 echo '==> Finished'
 echo '==> Running the tests...'
-./TEST
+$output_path
 echo '==> Finished'
 echo
 echo
 
 echo '==> Compiling with "gcc"...'
-gcc $path_cpp -o TEST
+gcc $path_cpp -o $output_path
 echo '==> Finished'
 echo '==> Running the tests...'
-./TEST
+$output_path
 echo '==> Finished'
 echo
 echo
@@ -72,7 +73,7 @@ echo '================================'
 echo '====== C++ tests finished ======'
 echo '================================'
 
-rm ./TEST
+rm $output_path
 rm $path_cpp
 
 echo

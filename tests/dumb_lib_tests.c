@@ -4,7 +4,7 @@ dumb_lib_tests.c - tests for dumb_lib.h
 
 ===============================================================================
 
-version 0.3.0
+version 0.4.0
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -44,8 +44,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #define DUMB_PRINT_FAILURE() { printf("\n\tFAIL ON LINE %d;\t", __LINE__); }
 
-void type_size_test(void);
-
 void arena_test(void);
 
 void array_add_get_test(void);
@@ -62,8 +60,6 @@ void string_compare_test(void);
 int
 main(void)
 {
-	type_size_test();
-
 	arena_test();
 
 	array_add_get_test();
@@ -81,38 +77,12 @@ main(void)
 }
 
 void
-type_size_test(void)
-{
-	int passed;
-
-	printf("Running 'type_size_test()'... ");
-
-	passed = 1;
-
-	if (sizeof(s8)  != 1) { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (sizeof(s16) != 2) { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (sizeof(s32) != 4) { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (sizeof(s64) != 8) { passed = 0; DUMB_PRINT_FAILURE(); }
-
-	if (sizeof(u8)  != 1) { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (sizeof(u16) != 2) { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (sizeof(u32) != 4) { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (sizeof(u64) != 8) { passed = 0; DUMB_PRINT_FAILURE(); }
-
-	if (sizeof(f32) != 4) { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (sizeof(f64) != 8) { passed = 0; DUMB_PRINT_FAILURE(); }
-
-	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
-	else        { printf("\033[1;31mFAILED\033[0m\n"); }
-}
-
-void
 arena_test(void)
 {
 	int passed;
 
 	int i;
-	Dumb_Arena arena;
+	Dumb_Arena *arena;
 	char *str;
 
 	printf("Running 'arena_test()'... ");
@@ -121,36 +91,32 @@ arena_test(void)
 
 	/* PART I: */
 	arena = dumb_arena_create(0);
-	if (arena._capacity != DUMB_ARENA_MIN_CAPACITY) { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (arena._position != 0)                       { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (arena->_current->_capacity != DUMB_ARENA_MIN_CAPACITY) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (arena->_current->_position != 0)                       { passed = 0; DUMB_PRINT_FAILURE(); }
 
-	for (i = 0; i < arena._capacity; i++)
+	for (i = 0; i < arena->_current->_capacity; i++)
 	{
-		char current_byte = arena._memory[i];
+		char current_byte = arena->_current->_memory[i];
 		if (current_byte != 0) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
 
 	/* PART II: */
 	#define MAGICAL_VALUE (DUMB_ARENA_MIN_CAPACITY + 300)
-	str = (char *)dumb_arena_push(&arena, MAGICAL_VALUE);
-	if (arena._capacity <= MAGICAL_VALUE) { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (arena._position != MAGICAL_VALUE) { passed = 0; DUMB_PRINT_FAILURE(); }
+	str = (char *)dumb_arena_push(arena, MAGICAL_VALUE);
+	if (arena->_current->_capacity < MAGICAL_VALUE) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (arena->_current->_position < MAGICAL_VALUE) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	memcpy(str, "Hello, sailor!\n", 15);
 	if (memcmp("Hello, sailor!\n", str, 15) != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 
 	/* PART III: */
-	dumb_arena_pop(&arena, MAGICAL_VALUE);
-	if (arena._capacity  < (DUMB_ARENA_MIN_CAPACITY * 2)) { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (arena._position != 0)                             { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (memcmp("Hello, sailor!\n", str, 15) == 0)         { passed = 0; DUMB_PRINT_FAILURE(); }
+	dumb_arena_pop(arena, MAGICAL_VALUE);
+	if (arena->_current->_position != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (memcmp("Hello, sailor!\n", str, 15) == 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* PART IV: */
-	dumb_arena_destroy(&arena);
-	if (arena._capacity != 0)    { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (arena._position != 0)    { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (arena._memory   != NULL) { passed = 0; DUMB_PRINT_FAILURE(); }
+	dumb_arena_destroy(arena);
 
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
 	else        { printf("\033[1;31mFAILED\033[0m\n"); }
@@ -164,15 +130,15 @@ array_add_get_test(void)
 	#define E 2
 	int i;
 
-	Dumb_Arena arena;
-	Dumb_Array a;
+	Dumb_Arena *arena;
+	Dumb_Array  a;
 
 	printf("Running 'array_add_get_test()'... ");
 
 	passed = 1;
 	arena = dumb_arena_create(0);
 
-	a = dumb_array_init(&arena, sizeof(i));
+	a = dumb_array_init(arena, sizeof(i));
 	if (a.count != 0)              { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._capacity < a.count)     { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._elem_size != sizeof(i)) { passed = 0; DUMB_PRINT_FAILURE(); }
@@ -181,7 +147,7 @@ array_add_get_test(void)
 	for (i = 0; i < 10; i++)
 	{
 		int x = i * E;
-		dumb_array_add(&arena, &a, &x);
+		dumb_array_add(arena, &a, &x);
 
 		if (a.count != (i + 1))    { passed = 0; DUMB_PRINT_FAILURE(); break; }
 		if (a._capacity < a.count) { passed = 0; DUMB_PRINT_FAILURE(); break; }
@@ -197,7 +163,7 @@ array_add_get_test(void)
 	}
 	if (a._elements == NULL) { passed = 0; DUMB_PRINT_FAILURE(); }
 
-	dumb_arena_destroy(&arena);
+	dumb_arena_destroy(arena);
 
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
 	else        { printf("\033[1;31mFAILED\033[0m\n"); }
@@ -212,8 +178,8 @@ array_add_get_large_test(void)
 	int i;
 	int x;
 
-	Dumb_Arena arena;
-	Dumb_Array a;
+	Dumb_Arena *arena;
+	Dumb_Array  a;
 
 	printf("Running 'array_add_get_large_test()'... ");
 
@@ -221,7 +187,7 @@ array_add_get_large_test(void)
 	/* Intentionally 0, to stress-test the arena implementation */
 	arena = dumb_arena_create(0);
 
-	a = dumb_array_init_precise(&arena, sizeof(i), COUNT);
+	a = dumb_array_init_precise(arena, sizeof(i), COUNT);
 	if (a.count != 0)              { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._capacity < a.count)     { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._elem_size != sizeof(i)) { passed = 0; DUMB_PRINT_FAILURE(); }
@@ -230,7 +196,7 @@ array_add_get_large_test(void)
 	for (i = 0; i < COUNT; i++)
 	{
 		x = i;
-		dumb_array_add(&arena, &a, &x);
+		dumb_array_add(arena, &a, &x);
 	}
 
 	for (i = 0; i < a.count; i++)
@@ -245,7 +211,7 @@ array_add_get_large_test(void)
 	if (a._capacity   < COUNT) { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._elements  == NULL)  { passed = 0; DUMB_PRINT_FAILURE(); }
 
-	dumb_arena_destroy(&arena);
+	dumb_arena_destroy(arena);
 
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
 	else        { printf("\033[1;31mFAILED\033[0m\n"); }
@@ -256,21 +222,21 @@ string_from_test(void)
 {
 	int passed;
 
-	Dumb_Arena arena;
-	Dumb_String s;
+	Dumb_Arena  *arena;
+	Dumb_String  s;
 
 	printf("Running 'string_from_test()'... ");
 
 	passed = 1;
 	arena = dumb_arena_create(0);
 
-	s = dumb_string_from(&arena, "Hello, World!");
+	s = dumb_string_from(arena, "Hello, World!");
 	if (s.chars == NULL)                  { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (strcmp(s.chars, "Hello, World!")) { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s.count != 13)                    { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
-	dumb_arena_destroy(&arena);
+	dumb_arena_destroy(arena);
 
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
 	else        { printf("\033[1;31mFAILED\033[0m\n"); }
@@ -281,36 +247,36 @@ string_new_append_string_test(void)
 {
 	int passed;
 
-	Dumb_Arena arena;
-	Dumb_String s;
+	Dumb_Arena  *arena;
+	Dumb_String  s;
 
 	printf("Running 'string_new_append_string_test()'... ");
 
 	passed = 1;
 	arena = dumb_arena_create(0);
 
-	s = dumb_string_new(&arena);
+	s = dumb_string_new(arena);
 	if (s.chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s.count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
-	dumb_string_append(&arena, &s, "Hello");
+	dumb_string_append(arena, &s, "Hello");
 	if (strcmp(s.chars, "Hello")) { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s.count != 5)             { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s.count)    { passed = 0; DUMB_PRINT_FAILURE(); }
 
-	dumb_string_append(&arena, &s, ", ");
+	dumb_string_append(arena, &s, ", ");
 	if (strcmp(s.chars, "Hello, ")) { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s.count != 7)               { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s.count)      { passed = 0; DUMB_PRINT_FAILURE(); }
 
-	dumb_string_append(&arena, &s, "World!");
+	dumb_string_append(arena, &s, "World!");
 	if (strcmp(s.chars, "Hello, World!")) { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s.count != 13)                    { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s.count)            { passed = 0; DUMB_PRINT_FAILURE(); }
 
-	dumb_arena_destroy(&arena);
+	dumb_arena_destroy(arena);
 
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
 	else        { printf("\033[1;31mFAILED\033[0m\n"); }
@@ -321,27 +287,27 @@ string_new_push_pop_test(void)
 {
 	int passed;
 
-	Dumb_Arena arena;
-	Dumb_String s;
+	Dumb_Arena  *arena;
+	Dumb_String  s;
 
 	printf("Running 'string_new_push_pop_test()'... ");
 
 	passed = 1;
 	arena = dumb_arena_create(0);
 
-	s = dumb_string_new(&arena);
+	s = dumb_string_new(arena);
 
 	if (s.chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s.count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
-	dumb_string_push(&arena, &s, 'A');
+	dumb_string_push(arena, &s, 'A');
 	if (strcmp(s.chars, "A"))  { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s.count != 1)          { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
-	dumb_string_push(&arena, &s, 'B');
+	dumb_string_push(arena, &s, 'B');
 	if (strcmp(s.chars, "AB")) { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s.count != 2)          { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
@@ -368,7 +334,7 @@ string_new_push_pop_test(void)
  	if (s.count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
-	dumb_arena_destroy(&arena);
+	dumb_arena_destroy(arena);
 
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
 	else        { printf("\033[1;31mFAILED\033[0m\n"); }
@@ -379,8 +345,8 @@ string_utf8_test(void)
 {
 	int passed;
 
-	Dumb_Arena arena;
-	Dumb_String s;
+	Dumb_Arena  *arena;
+	Dumb_String  s;
 	int i;
 
 	printf("Running 'string_utf8_test()'... ");
@@ -388,7 +354,7 @@ string_utf8_test(void)
 	passed = 1;
 	arena = dumb_arena_create(0);
 
-	s = dumb_string_from(&arena, "ě š č ř ž ý á í é ú ů ó ť\nĚ Š Č Ř Ž Ý Á Í É Ú Ů Ó Ť");
+	s = dumb_string_from(arena, "ě š č ř ž ý á í é ú ů ó ť\nĚ Š Č Ř Ž Ý Á Í É Ú Ů Ó Ť");
 
 #ifdef __cplusplus
 /* Almost forgot how great C++ is, how much more productive it makes you & how incredibly readable it is! Sigh... */
@@ -436,7 +402,7 @@ string_utf8_test(void)
 		if (s.chars[i] != codepoints[i]) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
 
-	dumb_arena_destroy(&arena);
+	dumb_arena_destroy(arena);
 
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
 	else        { printf("\033[1;31mFAILED\033[0m\n"); }
@@ -447,9 +413,9 @@ string_split_by_char_test(void)
 {
 	int passed;
 
-	Dumb_Arena arena;
-	Dumb_String str;
-	Dumb_Array strings;
+	Dumb_Arena  *arena;
+	Dumb_String  str;
+	Dumb_Array   strings;
 	int i;
 
 	printf("Running 'string_split_by_char_test()'... ");
@@ -458,8 +424,8 @@ string_split_by_char_test(void)
 
 	arena = dumb_arena_create(0);
 
-	str = dumb_string_from(&arena, "Hello there...\nThe name's Bond. James Bond.");
-	strings = dumb_string_split_by_char(&arena, &str, ' ');
+	str = dumb_string_from(arena, "Hello there...\nThe name's Bond. James Bond.");
+	strings = dumb_string_split_by_char(arena, &str, ' ');
 
 	char *test_strings[] =
 	{
@@ -480,7 +446,7 @@ string_split_by_char_test(void)
 		if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
 
-	dumb_arena_destroy(&arena);
+	dumb_arena_destroy(arena);
 
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
 	else        { printf("\033[1;31mFAILED\033[0m\n"); }
@@ -491,8 +457,8 @@ string_trim_whitespace_test(void)
 {
 	int passed;
 
-	Dumb_Arena arena;
-	Dumb_String str;
+	Dumb_Arena  *arena;
+	Dumb_String  str;
 
 	printf("Running 'string_trim_whitespace_test()'... ");
 
@@ -500,10 +466,10 @@ string_trim_whitespace_test(void)
 	arena = dumb_arena_create(0);
 
 	/* Part I: */
-	str = dumb_string_from(&arena, "  \t\vHello, sailor!\n \t\n \r\n ");
-	dumb_string_push(&arena, &str, '\0');
-	dumb_string_push(&arena, &str, '\n');
-	dumb_string_push(&arena, &str, ' ');
+	str = dumb_string_from(arena, "  \t\vHello, sailor!\n \t\n \r\n ");
+	dumb_string_push(arena, &str, '\0');
+	dumb_string_push(arena, &str, '\n');
+	dumb_string_push(arena, &str, ' ');
 
 	dumb_string_trim_whitespace(&str);
 
@@ -511,14 +477,14 @@ string_trim_whitespace_test(void)
 	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* Part II: */
-	str = dumb_string_new(&arena);
+	str = dumb_string_new(arena);
 
 	dumb_string_trim_whitespace(&str);
 
 	result = strcmp(str.chars, "");
 	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 
-	dumb_arena_destroy(&arena);
+	dumb_arena_destroy(arena);
 
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
 	else        { printf("\033[1;31mFAILED\033[0m\n"); }
@@ -529,7 +495,7 @@ string_compare_test(void)
 {
 	int passed;
 
-	Dumb_Arena arena;
+	Dumb_Arena *arena;
 	int result;
 	Dumb_String str_a;
 	Dumb_String str_b;
@@ -540,27 +506,27 @@ string_compare_test(void)
 	arena = dumb_arena_create(0);
 
 	/* Part I: */
-	str_a = dumb_string_from(&arena, "Hello, sailor!");
-	str_b = dumb_string_from(&arena, "Hello, sailor!");
+	str_a = dumb_string_from(arena, "Hello, sailor!");
+	str_b = dumb_string_from(arena, "Hello, sailor!");
 
 	result = dumb_string_compare(&str_a, &str_b);
 	if (result != 1) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* Part II: */
-	str_a = dumb_string_from(&arena, "Hello, sailor!");
-	str_b = dumb_string_from(&arena, "Hello, Sailor!");
+	str_a = dumb_string_from(arena, "Hello, sailor!");
+	str_b = dumb_string_from(arena, "Hello, Sailor!");
 
 	result = dumb_string_compare(&str_a, &str_b);
 	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* Part III: */
-	str_a = dumb_string_from(&arena, "Žluťoučký kůň skáče do dáli... 😊");
-	str_b = dumb_string_from(&arena, "Žluťoučký kůň skáče do dáli... 😊");
+	str_a = dumb_string_from(arena, "Žluťoučký kůň skáče do dáli... 😊");
+	str_b = dumb_string_from(arena, "Žluťoučký kůň skáče do dáli... 😊");
 
 	result = dumb_string_compare(&str_a, &str_b);
 	if (result != 1) { passed = 0; DUMB_PRINT_FAILURE(); }
 
-	dumb_arena_destroy(&arena);
+	dumb_arena_destroy(arena);
 
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
 	else        { printf("\033[1;31mFAILED\033[0m\n"); }

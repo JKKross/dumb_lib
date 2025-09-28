@@ -4,7 +4,7 @@ dumb_lib.h - something like my personal "standard library"/"C extension".
 
 ===============================================================================
 
-version 0.3.0
+version 0.4.0
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -161,14 +161,6 @@ extern "C" {
 #define DUMB_DEFAULT_ARRAY_SIZE         256  /* No reason so far */
 #define DUMB_DEFAULT_STRING_SIZE_BYTES  32   /* No reason so far */
 
-/* Math constants */
-#define DUMB_PI   3.14159265358979323846
-#define DUMB_TAU  6.28318530717958647693
-
-/* In case you need to make sure you get a float instead of a double: */
-#define DUMB_PI_32   3.14159265358979323846f
-#define DUMB_TAU_32  6.28318530717958647693f
-
 /* --- |MACROS| --- */
 
 #ifdef DUMB_DEBUG
@@ -176,7 +168,7 @@ extern "C" {
 	   @NOTE(Honza): If the assert fails, we crash, and can see where in a debugger.
 	   No need to get fancier - at least for now.
 	*/
-	#define DUMB_ASSERT(condition) if (!(condition)) { *(int *)0 = 0; }
+	#define DUMB_ASSERT(condition) if (!(condition)) { *(volatile int *)0 = 0; }
 #else
 	/* Do nothing in release builds. */
 	#define DUMB_ASSERT(condition)
@@ -189,32 +181,15 @@ extern "C" {
 
 /* --- |TYPES| --- */
 
-/*
-   To ensure maximum portability of the library,
-   none of these basic typedef'd types are used in the
-   implementation of dumb_lib's functionality.
+typedef struct Dumb_Arena Dumb_Arena;
 
-   They are here just to make my life easier
-   when using dumb_lib in a project.
-*/
-typedef char                s8;
-typedef short               s16;
-typedef long                s32;
-typedef long long           s64;
-
-typedef unsigned char       u8;
-typedef unsigned short      u16;
-typedef unsigned long       u32;
-typedef unsigned long long  u64;
-
-typedef float               f32;
-typedef double              f64;
-
-typedef struct Dumb_Arena {
-	size_t  _capacity;
-	size_t  _position;
-	char   *_memory;
-} Dumb_Arena;
+struct Dumb_Arena {
+	Dumb_Arena *_previous; /* Set to NULL on the very first arena in chain. */
+	Dumb_Arena *_current;  /* Set to NULL on all arenas except the very first one in chain. */
+	size_t      _capacity;
+	size_t      _position;
+	char       *_memory;
+};
 
 typedef struct Dumb_Array {
 	size_t  count;
@@ -237,7 +212,10 @@ dumb_memcpy(void *to, void *from, size_t num_bytes);
 int
 dumb_memcmp(void *a, void *b, size_t num_bytes);
 
-Dumb_Arena
+void
+dumb_memset(void *memory, unsigned char byte, size_t num_bytes);
+
+Dumb_Arena *
 dumb_arena_create(size_t size);
 
 void
@@ -345,29 +323,45 @@ dumb_memcmp(void *a, void *b, size_t num_bytes)
 	return 0;
 }
 
-Dumb_Arena
+void
+dumb_memset(void *memory, unsigned char byte, size_t num_bytes)
+{
+	int i;
+	unsigned char *mem;
+
+	mem = (unsigned char *)memory;
+
+	for (i = 0; i < num_bytes; i++)
+	{
+		mem[i] = byte;
+	}
+}
+
+Dumb_Arena *
 dumb_arena_create(size_t size)
 {
 	size_t capacity;
-	Dumb_Arena new_arena;
+	Dumb_Arena *new_arena;
 
 	/*
 	   @NOTE(Honza): Is this a good idea?
 
-	   On one hand, in most situations, if you need
+	   The reasoning is, that in most situations, if you need
 	   less memory than DUMB_ARENA_MIN_CAPACITY,
 	   you might as well use the stack or malloc/calloc.
-
-	   On the other hand, this might be a surprise for the user.
 	*/
 	if (size < DUMB_ARENA_MIN_CAPACITY) { capacity = DUMB_ARENA_MIN_CAPACITY; }
 	else                                { capacity = size; }
 
-	new_arena._capacity = capacity;
-	new_arena._position = 0;
-	new_arena._memory   = (char *) calloc(capacity, sizeof(char));
+	new_arena = calloc(sizeof(Dumb_Arena), sizeof(Dumb_Arena));
 
-	DUMB_ASSERT(new_arena._memory != NULL)
+	new_arena->_previous = NULL;
+	new_arena->_current  = new_arena;
+	new_arena->_capacity = capacity;
+	new_arena->_position = 0;
+	new_arena->_memory   = (char *) calloc(capacity, sizeof(char));
+
+	DUMB_ASSERT(new_arena->_memory != NULL)
 
 	return new_arena;
 }
@@ -375,10 +369,31 @@ dumb_arena_create(size_t size)
 void
 dumb_arena_destroy(Dumb_Arena *arena)
 {
-	arena->_capacity = 0;
-	arena->_position = 0;
-	free(arena->_memory);
-	arena->_memory = NULL;
+	Dumb_Arena *tmp_ptr;
+
+	while (1)
+	{
+		arena->_current->_capacity = 0;
+		arena->_current->_position = 0;
+
+		free(arena->_current->_memory);
+
+		arena->_current->_memory = NULL;
+
+		if (arena->_current->_previous == NULL)
+		{
+			arena->_current = NULL;
+			free(arena);
+			arena = NULL;
+			return;
+		}
+		else
+		{
+			tmp_ptr = arena->_current;
+			arena->_current = arena->_current->_previous;
+			free(tmp_ptr);
+		}
+	}
 }
 
 void *
@@ -387,56 +402,82 @@ dumb_arena_push(Dumb_Arena *arena, size_t size)
 	size_t old_position;
 	size_t new_position;
 
-	old_position = arena->_position;
-	new_position = arena->_position + size;
+	Dumb_Arena *new_arena;
 
-	if (new_position > arena->_capacity)
+	old_position = arena->_current->_position;
+	new_position = arena->_current->_position + size;
+
+	if (new_position > arena->_current->_capacity)
 	{
-		char *buf;
+		/* @NOTE(Honza): maybe this should be size * 2 ??? */
+		new_arena = dumb_arena_create(size);
 
-/*
-		if (new_position > (arena->_capacity * 2))
-		{
-			arena->_capacity = new_position * 2;
-		}
-		else
-		{
-			arena->_capacity = arena->_capacity * 2;
-		}
-*/
+		new_arena->_previous = arena->_current;
+		new_arena->_current  = NULL;
+		new_arena->_position = size;
 
-		/* @NOTE(Honza): Maybe this is not great and I should use the code above? */
-		arena->_capacity = new_position * 2;
-		buf = calloc(arena->_capacity, sizeof(char));
+		arena->_current = new_arena;
 
-		dumb_memcpy(buf, arena->_memory, old_position);
-
-		free(arena->_memory);
-
-		arena->_memory = buf;
+		return arena->_current->_memory;
 	}
-	arena->_position = new_position;
-	return arena->_memory + old_position;
+	else
+	{
+		arena->_current->_position = new_position;
+		return arena->_current->_memory + old_position;
+	}
 }
 
 void
 dumb_arena_pop(Dumb_Arena *arena, size_t size)
 {
-	size_t i;
-	size_t original_position;
-	size_t new_position;
+	int num_bytes_left_to_pop;
+	Dumb_Arena *tmp_ptr;
 
-	/* @NOTE(Honza): Check always? */
-	DUMB_ASSERT(size <= arena->_position)
-
-	original_position = arena->_position;
-	new_position = original_position - size;
-
-	arena->_position = new_position;
-
-	for (i = arena->_position; i < original_position; i++)
+	if (arena->_current->_position >= size)
 	{
-		arena->_memory[i] = 0;
+		arena->_current->_position -= size;
+		dumb_memset((arena->_current->_memory + arena->_current->_position), 0, size - 1);
+	}
+	else
+	{
+		num_bytes_left_to_pop = size;
+
+		while (num_bytes_left_to_pop != 0)
+		{
+			if ((arena->_current->_position == 0) && (arena->_current->_previous == NULL))
+			{
+				/*
+				   The user can pass a huge value to the size parameter to clear the
+				   whole arena chain & get to _position == 0 on the first arena
+				   without destroying it.
+				*/
+				return;
+			}
+
+			if (arena->_current->_position < num_bytes_left_to_pop)
+			{
+				/* Destroy current arena. */
+				arena->_current->_capacity = 0;
+				free(arena->_current->_memory);
+				arena->_current->_memory = NULL;
+
+				/* Decrement num_bytes_left_to_pop. */
+				num_bytes_left_to_pop -= arena->_current->_position;
+				arena->_current->_position = 0;
+
+				/* Set new current arena. */
+				tmp_ptr = arena->_current;
+				arena->_current = arena->_current->_previous;
+
+				free(tmp_ptr);
+			}
+			else
+			{
+				arena->_current->_position -= num_bytes_left_to_pop;
+				dumb_memset((arena->_current->_memory + arena->_current->_position), 0, num_bytes_left_to_pop);
+				num_bytes_left_to_pop = 0;
+			}
+		}
 	}
 }
 
