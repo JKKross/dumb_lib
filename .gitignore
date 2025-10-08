@@ -1,1 +1,6 @@
 tests/build/*
+
+tests/win_build_dev.bat
+tests/win_development_tests.bat
+
+tests/*_development_tests.sh

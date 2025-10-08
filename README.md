@@ -27,7 +27,7 @@ Of course you are free to do so, or to read through the source,
 yank the parts you like out etc.
 
 - If you're wondering why there are no "//" comments, it's because they are not part
-of the C89 standart.
+of the C89 standard.
 For rationale to comply with C89 see [Dependable C](https://www.dependablec.org/)
 
 - If you are wondering why I decided to use single-header style for the library, see
