@@ -4,7 +4,7 @@ dumb_lib.h - something like my personal "standard library"/"C extension".
 
 ===============================================================================
 
-version 0.4.0
+version 0.4.1
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -72,8 +72,10 @@ meant primarily for:
 	B) My own learning purposes
 
 That means that the library is still very much "under construction",
-and also, that I will most likely not accept any pull requests.
-(I may change my mind on that, obviously)
+and also, that I will most likely not accept any pull requests to dumb\_lib.h.
+(I may change my mind on that, obviously.
+Pull requests adding tests, typo-fixes etc.
+are welcome & very much appreciated, though.)
 
 Thus, I ask you: if you want to use it, READ THROUGH THE CODE, VALIDATE IT,
 TEST IT OUT YOURSELF AND TAKE THE "NO WARRANTY..." PART OF THE LICENSE SERIOUSLY.
@@ -85,24 +87,20 @@ TEST IT OUT YOURSELF AND TAKE THE "NO WARRANTY..." PART OF THE LICENSE SERIOUSLY
 	|SECTION| - NOTES
 	----------------------------
 
-- Originally, I pretty much tried to copy the stb libraries style (i.e. "define
-your own allocator" etc.), but since this library is meant basically just for
-my own use, I decided to make it more opinionated.
+- Originally, I pretty much tried to copy the stb libraries style
+(i.e. "define your own allocator" etc.), but since this library is meant
+basically just for my own use, I decided to make it more opinionated.
 
 Once again, that basically means: DO NOT USE THIS LIBRARY!
-Of course you are free to do so, or to read through the source, yank the parts
-you like out etc.
-
+Of course you are free to do so, or to read through the source,
+yank the parts you like out etc.
 
 - If you're wondering why there are no "//" comments, it's because they are not part
-of the C89 standard. For rationale to comply with C89 see:
+of the C89 standart.
+For rationale to comply with C89 see [Dependable C](https://www.dependablec.org/)
 
-	https://www.dependablec.org/
-
-
-- If you are wondering why I decided to use single-header style for the library, see:
-
-	https://github.com/nothings/stb?tab=readme-ov-file#why-single-file-headers
+- If you are wondering why I decided to use single-header style for the library, see
+[Sean Barrett's explanation](https://github.com/nothings/stb?tab=readme-ov-file#why-single-file-headers)
 
 ===============================================================================
 
@@ -215,6 +213,12 @@ dumb_memcmp(void *a, void *b, size_t num_bytes);
 void
 dumb_memset(void *memory, unsigned char byte, size_t num_bytes);
 
+/*
+@TODO(Honza):
+
+Everything should be either create/destroy, init/deinit or new/delete.
+Change in the next major version.
+*/
 Dumb_Arena *
 dumb_arena_create(size_t size);
 
@@ -229,12 +233,26 @@ dumb_arena_pop(Dumb_Arena *arena, size_t size);
 
 /* --- |ARRAY| --- */
 
+/*
+@TODO(Honza):
+
+Everything should be either create/destroy, init/deinit or new/delete.
+Change in the next major version.
+*/
 Dumb_Array
 dumb_array_init(Dumb_Arena *arena, size_t elem_size);
 
 Dumb_Array
 dumb_array_init_precise(Dumb_Arena *arena, size_t elem_size, size_t number_of_elems);
 
+void
+dumb_array_clear(Dumb_Array *array);
+
+/*
+@TODO(Honza):
+
+Rename to dumb_array_push in next mejor version.
+*/
 void
 dumb_array_add(Dumb_Arena *arena, Dumb_Array *a, void *new_elem);
 
@@ -243,6 +261,12 @@ dumb_array_get(Dumb_Array *a, size_t index);
 
 /* --- |STRING| --- */
 
+/*
+@TODO(Honza):
+
+Everything should be either create/destroy, init/deinit or new/delete.
+Change in the next major version.
+*/
 Dumb_String
 dumb_string_new(Dumb_Arena *arena);
 
@@ -251,6 +275,9 @@ dumb_string_new_precise(Dumb_Arena *arena, size_t capacity);
 
 Dumb_String
 dumb_string_from(Dumb_Arena *arena, const char *str);
+
+void
+dumb_string_clear(Dumb_String *str);
 
 void
 dumb_string_push(Dumb_Arena *arena, Dumb_String *str, char c);
@@ -280,11 +307,6 @@ dumb_string_compare(Dumb_String *str_a, Dumb_String *str_b);
 
 void
 PRIVATE_dumb_string_change_capacity(Dumb_Arena *arena, Dumb_String *str, size_t new_capacity);
-
-/* --- |RANDOM| --- */
-
-
-/* --- |FILE OPERATIONS| --- */
 
 /*
 	|SECTION| - IMPLEMENTATION
@@ -508,6 +530,13 @@ dumb_array_init_precise(Dumb_Arena *arena, size_t elem_size, size_t number_of_el
 }
 
 void
+dumb_array_clear(Dumb_Array *array)
+{
+	dumb_memset(array->_elements, 0, (array->count * array->_elem_size));
+	array->count = 0;
+}
+
+void
 dumb_array_add(Dumb_Arena *arena, Dumb_Array *a, void *new_elem)
 {
 	char *new_elem_destination;
@@ -596,6 +625,13 @@ dumb_string_from(Dumb_Arena *arena, const char *str)
 		i++;
 	}
 	return s;
+}
+
+void
+dumb_string_clear(Dumb_String *str)
+{
+	dumb_memset(str->chars, 0, str->count);
+	str->count = 0;
 }
 
 void

@@ -4,7 +4,7 @@ dumb_lib_tests.c - tests for dumb_lib.h
 
 ===============================================================================
 
-version 0.4.0
+version 0.4.1
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -195,12 +195,14 @@ array_add_get_test(void)
 	passed = 1;
 	arena = dumb_arena_create(0);
 
+	/* PART I: dumb_array_init */
 	a = dumb_array_init(arena, sizeof(i));
 	if (a.count != 0)              { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._capacity < a.count)     { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._elem_size != sizeof(i)) { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._elements == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
 
+	/* PART II: dumb_array_add */
 	for (i = 0; i < 10; i++)
 	{
 		int x = i * E;
@@ -211,6 +213,7 @@ array_add_get_test(void)
 	}
 	if (a._elements == NULL) { passed = 0; DUMB_PRINT_FAILURE(); }
 
+	/* PART III: dumb_array_get */
 	for (i = 0; i < a.count; i++)
 	{
 		int *px = (int *) dumb_array_get(&a, i);
@@ -219,6 +222,20 @@ array_add_get_test(void)
 		if (x != (i * E)) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
 	if (a._elements == NULL) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	/* PART IV: dumb_array_clear */
+	size_t array_capacity = a._capacity;
+	size_t array_count = a.count;
+	dumb_array_clear(&a);
+
+	for (i = 0; i < array_count; i++)
+	{
+		char *elements_ptr = (char *)a._elements;
+		int result = *(int *)(elements_ptr + (a._elem_size * i));
+		if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
+	}
+	if (a.count != 0)                  { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._capacity != array_capacity) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_arena_destroy(arena);
 
@@ -244,18 +261,21 @@ array_add_get_large_test(void)
 	/* Intentionally 0, to stress-test the arena implementation */
 	arena = dumb_arena_create(0);
 
+	/* PART I: dumb_array_init */
 	a = dumb_array_init_precise(arena, sizeof(i), COUNT);
 	if (a.count != 0)              { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._capacity < a.count)     { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._elem_size != sizeof(i)) { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._elements == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
 
+	/* PART II: dumb_array_add */
 	for (i = 0; i < COUNT; i++)
 	{
 		x = i;
 		dumb_array_add(arena, &a, &x);
 	}
 
+	/* PART III: dumb_array_get */
 	for (i = 0; i < a.count; i++)
 	{
 		int *px = (int *) dumb_array_get(&a, i);
@@ -267,6 +287,20 @@ array_add_get_large_test(void)
 	if (a.count      != COUNT) { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._capacity   < COUNT) { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._elements  == NULL)  { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	/* PART IV: dumb_array_clear */
+	size_t array_capacity = a._capacity;
+	size_t array_count = a.count;
+	dumb_array_clear(&a);
+
+	for (i = 0; i < array_count; i++)
+	{
+		char *elements_ptr = (char *)a._elements;
+		int result = *(int *)(elements_ptr + (a._elem_size * i));
+		if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
+	}
+	if (a.count != 0)                  { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._capacity != array_capacity) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_arena_destroy(arena);
 
@@ -304,6 +338,8 @@ string_new_append_string_test(void)
 {
 	int passed;
 
+	size_t i;
+
 	Dumb_Arena  *arena;
 	Dumb_String  s;
 
@@ -312,12 +348,14 @@ string_new_append_string_test(void)
 	passed = 1;
 	arena = dumb_arena_create(0);
 
+	/* PART I: dumb_string_new */
 	s = dumb_string_new(arena);
 	if (s.chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s.count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
+	/* PART II: dumb_string_append */
 	dumb_string_append(arena, &s, "Hello");
 	if (strcmp(s.chars, "Hello")) { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s.count != 5)             { passed = 0; DUMB_PRINT_FAILURE(); }
@@ -333,6 +371,17 @@ string_new_append_string_test(void)
  	if (s.count != 13)                    { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s.count)            { passed = 0; DUMB_PRINT_FAILURE(); }
 
+	/* PART III: dumb_string_clear */
+	size_t string_capacity = s._capacity;
+	dumb_string_clear(&s);
+
+	for (i = 0; i < s._capacity; i++)
+	{
+		if (s.chars[i] != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
+	}
+	if (s.count != 0)                   { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (s._capacity != string_capacity) { passed = 0; DUMB_PRINT_FAILURE(); }
+
 	dumb_arena_destroy(arena);
 
 	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
@@ -344,6 +393,8 @@ string_new_push_pop_test(void)
 {
 	int passed;
 
+	size_t i;
+
 	Dumb_Arena  *arena;
 	Dumb_String  s;
 
@@ -352,6 +403,7 @@ string_new_push_pop_test(void)
 	passed = 1;
 	arena = dumb_arena_create(0);
 
+	/* PART I: dumb_string_new */
 	s = dumb_string_new(arena);
 
 	if (s.chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
@@ -359,6 +411,7 @@ string_new_push_pop_test(void)
  	if (s.count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
+	/* PART II: dumb_string_push */
 	dumb_string_push(arena, &s, 'A');
 	if (strcmp(s.chars, "A"))  { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s.count != 1)          { passed = 0; DUMB_PRINT_FAILURE(); }
@@ -369,6 +422,7 @@ string_new_push_pop_test(void)
  	if (s.count != 2)          { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
+	/* PART III: dumb_string_pop */
 	dumb_string_pop(&s);
 	if (strcmp(s.chars, "A"))  { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s.count != 1)          { passed = 0; DUMB_PRINT_FAILURE(); }
@@ -390,6 +444,17 @@ string_new_push_pop_test(void)
 	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s.count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	/* PART IV: dumb_string_clear */
+	size_t string_capacity = s._capacity;
+	dumb_string_clear(&s);
+
+	for (i = 0; i < s._capacity; i++)
+	{
+		if (s.chars[i] != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
+	}
+	if (s.count != 0)                   { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (s._capacity != string_capacity) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_arena_destroy(arena);
 

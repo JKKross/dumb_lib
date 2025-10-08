@@ -16,8 +16,8 @@ mkdir build
 pushd build
 
 echo === Compiling...
-cl /Zi /utf-8 /validate-charset /nologo /Wall ..\dumb_lib_tests.c /Fetest.exe
-REM clang -std=c89 -Weverything ..\dumb_lib_tests.c -o test.exe
+REM cl /Zi /utf-8 /validate-charset /nologo /Wall ..\dumb_lib_tests.c /Fetest.exe
+clang -std=c89 -Weverything ..\dumb_lib_tests.c -o test.exe
 REM gcc -std=c89 -Wall ..\dumb_lib_tests.c -o test.exe
 
 REM clang -std=c89 -O3 -Weverything ..\dumb_lib_tests.c -o test.exe
