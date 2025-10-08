@@ -42,7 +42,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #define DUMB_LIB_IMPLEMENTATION
 #include "../src/dumb_lib.h"
 
-#define DUMB_PRINT_FAILURE() { printf("\n\tFAIL ON LINE %d;\t", __LINE__); }
+#define DUMB_PRINT_FAILURE() { printf("\n - FAIL ON LINE %-34d", __LINE__); }
 
 void mem_test(void);
 void arena_test(void);
@@ -91,7 +91,7 @@ mem_test(void)
 
 	unsigned long a, b;
 
-	printf("Running 'mem_test()'... ");
+	printf("%-50s", "Running 'mem_test()'... ");
 
 	passed = 1;
 
@@ -129,8 +129,8 @@ mem_test(void)
 		if (arr_1[i] != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 	}
 
-	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
-	else        { printf("\033[1;31mFAILED\033[0m\n"); }
+	if (passed) { printf("%50s", "\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("%50s", "\033[1;31mFAILED\033[0m\n"); }
 }
 
 void
@@ -142,7 +142,7 @@ arena_test(void)
 	Dumb_Arena *arena;
 	char *str;
 
-	printf("Running 'arena_test()'... ");
+	printf("%-50s", "Running 'arena_test()'... ");
 
 	passed = 1;
 
@@ -175,8 +175,8 @@ arena_test(void)
 	/* PART IV: */
 	dumb_arena_destroy(arena);
 
-	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
-	else        { printf("\033[1;31mFAILED\033[0m\n"); }
+	if (passed) { printf("%50s", "\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("%50s", "\033[1;31mFAILED\033[0m\n"); }
 }
 
 void
@@ -190,7 +190,7 @@ array_add_get_test(void)
 	Dumb_Arena *arena;
 	Dumb_Array  a;
 
-	printf("Running 'array_add_get_test()'... ");
+	printf("%-50s", "Running 'array_add_get_test()'... ");
 
 	passed = 1;
 	arena = dumb_arena_create(0);
@@ -239,8 +239,8 @@ array_add_get_test(void)
 
 	dumb_arena_destroy(arena);
 
-	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
-	else        { printf("\033[1;31mFAILED\033[0m\n"); }
+	if (passed) { printf("%50s", "\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("%50s", "\033[1;31mFAILED\033[0m\n"); }
 }
 
 void
@@ -255,7 +255,7 @@ array_add_get_large_test(void)
 	Dumb_Arena *arena;
 	Dumb_Array  a;
 
-	printf("Running 'array_add_get_large_test()'... ");
+	printf("%-50s", "Running 'array_add_get_large_test()'... ");
 
 	passed = 1;
 	/* Intentionally 0, to stress-test the arena implementation */
@@ -304,8 +304,8 @@ array_add_get_large_test(void)
 
 	dumb_arena_destroy(arena);
 
-	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
-	else        { printf("\033[1;31mFAILED\033[0m\n"); }
+	if (passed) { printf("%50s", "\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("%50s", "\033[1;31mFAILED\033[0m\n"); }
 }
 
 void
@@ -316,7 +316,7 @@ string_from_test(void)
 	Dumb_Arena  *arena;
 	Dumb_String  s;
 
-	printf("Running 'string_from_test()'... ");
+	printf("%-50s", "Running 'string_from_test()'... ");
 
 	passed = 1;
 	arena = dumb_arena_create(0);
@@ -329,8 +329,8 @@ string_from_test(void)
 
 	dumb_arena_destroy(arena);
 
-	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
-	else        { printf("\033[1;31mFAILED\033[0m\n"); }
+	if (passed) { printf("%50s", "\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("%50s", "\033[1;31mFAILED\033[0m\n"); }
 }
 
 void
@@ -343,7 +343,7 @@ string_new_append_string_test(void)
 	Dumb_Arena  *arena;
 	Dumb_String  s;
 
-	printf("Running 'string_new_append_string_test()'... ");
+	printf("%-50s", "Running 'string_new_append_string_test()'... ");
 
 	passed = 1;
 	arena = dumb_arena_create(0);
@@ -384,8 +384,8 @@ string_new_append_string_test(void)
 
 	dumb_arena_destroy(arena);
 
-	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
-	else        { printf("\033[1;31mFAILED\033[0m\n"); }
+	if (passed) { printf("%50s", "\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("%50s", "\033[1;31mFAILED\033[0m\n"); }
 }
 
 void
@@ -398,7 +398,7 @@ string_new_push_pop_test(void)
 	Dumb_Arena  *arena;
 	Dumb_String  s;
 
-	printf("Running 'string_new_push_pop_test()'... ");
+	printf("%-50s", "Running 'string_new_push_pop_test()'... ");
 
 	passed = 1;
 	arena = dumb_arena_create(0);
@@ -458,8 +458,8 @@ string_new_push_pop_test(void)
 
 	dumb_arena_destroy(arena);
 
-	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
-	else        { printf("\033[1;31mFAILED\033[0m\n"); }
+	if (passed) { printf("%50s", "\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("%50s", "\033[1;31mFAILED\033[0m\n"); }
 }
 
 void
@@ -471,14 +471,14 @@ string_utf8_test(void)
 	Dumb_String  s;
 	int i;
 
-	printf("Running 'string_utf8_test()'... ");
+	printf("%-50s", "Running 'string_utf8_test()'... ");
 
 	passed = 1;
 	arena = dumb_arena_create(0);
 
 	s = dumb_string_from(arena, "ě š č ř ž ý á í é ú ů ó ť\nĚ Š Č Ř Ž Ý Á Í É Ú Ů Ó Ť");
 
-#ifdef __cplusplus
+#ifdef WDD_C_PLUS_PLUS_TESTS
 /* Almost forgot how great C++ is, how much more productive it makes you & how incredibly readable it is! Sigh... */
 	char codepoints[] = {
 	         static_cast<signed char>(0xc4), static_cast<signed char>(0x9b), static_cast<signed char>(0x20), static_cast<signed char>(0xc5), static_cast<signed char>(0xa1),
@@ -526,8 +526,8 @@ string_utf8_test(void)
 
 	dumb_arena_destroy(arena);
 
-	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
-	else        { printf("\033[1;31mFAILED\033[0m\n"); }
+	if (passed) { printf("%50s", "\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("%50s", "\033[1;31mFAILED\033[0m\n"); }
 }
 
 void
@@ -540,7 +540,7 @@ string_split_by_char_test(void)
 	Dumb_Array   strings;
 	int i;
 
-	printf("Running 'string_split_by_char_test()'... ");
+	printf("%-50s", "Running 'string_split_by_char_test()'... ");
 
 	passed = 1;
 
@@ -570,8 +570,8 @@ string_split_by_char_test(void)
 
 	dumb_arena_destroy(arena);
 
-	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
-	else        { printf("\033[1;31mFAILED\033[0m\n"); }
+	if (passed) { printf("%50s", "\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("%50s", "\033[1;31mFAILED\033[0m\n"); }
 }
 
 void
@@ -582,7 +582,7 @@ string_trim_whitespace_test(void)
 	Dumb_Arena  *arena;
 	Dumb_String  str;
 
-	printf("Running 'string_trim_whitespace_test()'... ");
+	printf("%-50s", "Running 'string_trim_whitespace_test()'... ");
 
 	passed = 1;
 	arena = dumb_arena_create(0);
@@ -608,8 +608,8 @@ string_trim_whitespace_test(void)
 
 	dumb_arena_destroy(arena);
 
-	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
-	else        { printf("\033[1;31mFAILED\033[0m\n"); }
+	if (passed) { printf("%50s", "\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("%50s", "\033[1;31mFAILED\033[0m\n"); }
 }
 
 void
@@ -622,7 +622,7 @@ string_compare_test(void)
 	Dumb_String str_a;
 	Dumb_String str_b;
 
-	printf("Running 'string_compare_test()'... ");
+	printf("%-50s", "Running 'string_compare_test()'... ");
 
 	passed = 1;
 	arena = dumb_arena_create(0);
@@ -650,6 +650,6 @@ string_compare_test(void)
 
 	dumb_arena_destroy(arena);
 
-	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
-	else        { printf("\033[1;31mFAILED\033[0m\n"); }
+	if (passed) { printf("%50s", "\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("%50s", "\033[1;31mFAILED\033[0m\n"); }
 }
