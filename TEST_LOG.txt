@@ -5,8 +5,8 @@
 ---------------------------------------------------------------------------------------------------------------------------------
 | PASSED | DATE       | ARCHITECTURE | PLATFORM       | COMPILER                                                                |
 ---------------------------------------------------------------------------------------------------------------------------------
-|   YES  | 2025/10/08 |  x86-64      | Windows 11     | Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35213 for x64     |
-|   YES  | 2025/10/08 |  x86-64      | Windows 11     | clang version 18.1.8 (Target: x86_64-pc-windows-msvc)                   |
-|   YES  | 2025/10/08 |  x86-64      | Windows 11     | gcc (x86_64-win32-seh-rev0, Built by MinGW-Builds project) 15.2.0       |
-|   YES  | 2025/10/08 |  x86-64      | Windows 11     | tcc version 0.9.27 (x86_64 Windows)                                     |
+| YES    | 2025/10/08 |  x86-64      | Windows 11     | Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35213 for x64     |
+| YES    | 2025/10/08 |  x86-64      | Windows 11     | clang version 18.1.8 (Target: x86_64-pc-windows-msvc)                   |
+| YES    | 2025/10/08 |  x86-64      | Windows 11     | gcc (x86_64-win32-seh-rev0, Built by MinGW-Builds project) 15.2.0       |
+| YES    | 2025/10/08 |  x86-64      | Windows 11     | tcc version 0.9.27 (x86_64 Windows)                                     |
 ---------------------------------------------------------------------------------------------------------------------------------

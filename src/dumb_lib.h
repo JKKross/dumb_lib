@@ -132,7 +132,12 @@ All other files should just #include "dumb_lib.h" without the #define.
 
 #if !(__GNUC__ || __CLANG__ || _MSC_VER || __TINYC__ )
 	#error YOU ARE USING A COMPILER THIS LIBRARY WAS NOT TESTED WITH! \
-If you wish to proceed, read through the source & make sure everything works correctly!
+If you wish to proceed, read through the source, run the tests & make sure everything works correctly!
+#endif
+
+#if !(defined(_WIN32))
+	#error THIS LIBRARY HAS NOT BEEN TESTED ON THIS PLATFORM! \
+If you wish to proceed, read through the source, run the tests & make sure everything works correctly!
 #endif
 
 /*
