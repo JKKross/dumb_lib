@@ -375,7 +375,7 @@ dumb_arena_create(size_t size)
 	if (size < DUMB_ARENA_MIN_CAPACITY) { capacity = DUMB_ARENA_MIN_CAPACITY; }
 	else                                { capacity = size; }
 
-	new_arena = calloc(sizeof(Dumb_Arena), sizeof(Dumb_Arena));
+	new_arena = (Dumb_Arena *)calloc(sizeof(Dumb_Arena), sizeof(Dumb_Arena));
 
 	new_arena->_previous = NULL;
 	new_arena->_current  = new_arena;
@@ -547,7 +547,7 @@ dumb_array_add(Dumb_Arena *arena, Dumb_Array *a, void *new_elem)
 	if ((a->count * a->_elem_size) == a->_capacity)
 	{
 		new_capacity = a->_capacity * 2;
-		tmp = dumb_arena_push(arena, new_capacity);
+		tmp = (char *)dumb_arena_push(arena, new_capacity);
 
 		dumb_memcpy(tmp, a->_elements, a->_capacity);
 		/*
@@ -598,7 +598,7 @@ dumb_string_new_precise(Dumb_Arena *arena, size_t capacity)
 
 	s.count     = 0;
 	s._capacity = capacity;
-	s.chars     = dumb_arena_push(arena, s._capacity);
+	s.chars     = (char *)dumb_arena_push(arena, s._capacity);
 /*
 	'malloc' doesn't initialize the memory,
 	so we do this to prevent weird interop issues with c strings.
