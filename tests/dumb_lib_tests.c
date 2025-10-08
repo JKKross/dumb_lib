@@ -44,6 +44,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #define DUMB_PRINT_FAILURE() { printf("\n\tFAIL ON LINE %d;\t", __LINE__); }
 
+void mem_test(void);
 void arena_test(void);
 
 void array_add_get_test(void);
@@ -60,6 +61,7 @@ void string_compare_test(void);
 int
 main(void)
 {
+	mem_test();
 	arena_test();
 
 	array_add_get_test();
@@ -74,6 +76,61 @@ main(void)
 	string_compare_test();
 
 	return 0;
+}
+
+void
+mem_test(void)
+{
+	int passed;
+
+	#define ARRAY_LEN 128
+	double arr_1[ARRAY_LEN];
+	double arr_2[ARRAY_LEN];
+
+	int i, result;
+
+	unsigned long a, b;
+
+	printf("Running 'mem_test()'... ");
+
+	passed = 1;
+
+	/* PART I: dumb_memcpy */
+	for (i = 0; i < ARRAY_LEN; i++)
+	{
+		arr_1[i] = (double)i * 3.1415;
+	}
+
+	dumb_memcpy(arr_2, arr_1, (sizeof(double) * ARRAY_LEN));
+
+	for (i = 0; i < ARRAY_LEN; i++)
+	{
+		if (arr_1[i] != arr_2[i]) { passed = 0; DUMB_PRINT_FAILURE(); }
+	}
+
+	/* PART II: dumb_memcmp */
+	result = dumb_memcmp(arr_1, arr_2, (ARRAY_LEN * sizeof(double)));
+	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	a = 0xFFFFFFFF;
+	b = 0xFFF0FFFF;
+
+	result = dumb_memcmp(&a, &b, sizeof(unsigned long));
+	if (result != 1) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	result = dumb_memcmp(&b, &a, sizeof(unsigned long));
+	if (result != -1) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	/* PART III: dumb_memset */
+	dumb_memset(arr_1, 0, (ARRAY_LEN * sizeof(double)));
+
+	for (i = 0; i < ARRAY_LEN; i++)
+	{
+		if (arr_1[i] != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
+	}
+
+	if (passed) { printf("\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("\033[1;31mFAILED\033[0m\n"); }
 }
 
 void
