@@ -35,15 +35,4 @@ For rationale to comply with C89 see [Dependable C](https://www.dependablec.org/
 
 ### Tested on
 
-[2025/10/08]
-#### Windows 11:
-- [x] Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35213 for x64
-- [x] clang version 18.1.8 (Target: x86\_64-pc-windows-msvc)
-- [x] gcc (x86\_64-win32-seh-rev0, Built by MinGW-Builds project) 15.2.0
-- [x] tcc version 0.9.27 (x86\_64 Windows)
-
-#### Linux:
-MISSING
-
-#### MacOS:
-MISSING
+See [TEST_LOG.txt](TEST_LOG.txt)
