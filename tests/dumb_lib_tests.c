@@ -371,8 +371,8 @@ string_from_test(void)
 	arena = dumb_arena_create(0);
 
 	s = dumb_string_from(arena, "Hello, World!");
-	if (s.chars == NULL)                  { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (strcmp(s.chars, "Hello, World!")) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (s._chars == NULL)                  { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp(s._chars, "Hello, World!")) { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._count != 13)                    { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s._count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
@@ -399,24 +399,24 @@ string_new_append_string_test(void)
 
 	/* PART I: dumb_string_new */
 	s = dumb_string_new(arena);
-	if (s.chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (s._chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp(s._chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s._count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* PART II: dumb_string_append */
 	dumb_string_append(arena, &s, "Hello");
-	if (strcmp(s.chars, "Hello")) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp(s._chars, "Hello")) { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._count != 5)             { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s._count)    { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_append(arena, &s, ", ");
-	if (strcmp(s.chars, "Hello, ")) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp(s._chars, "Hello, ")) { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._count != 7)               { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s._count)      { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_append(arena, &s, "World!");
-	if (strcmp(s.chars, "Hello, World!")) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp(s._chars, "Hello, World!")) { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._count != 13)                    { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s._count)            { passed = 0; DUMB_PRINT_FAILURE(); }
 
@@ -426,7 +426,7 @@ string_new_append_string_test(void)
 
 	for (i = 0; i < s._capacity; i++)
 	{
-		if (s.chars[i] != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
+		if (s._chars[i] != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 	}
 	if (s._count != 0)                   { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (s._capacity != string_capacity) { passed = 0; DUMB_PRINT_FAILURE(); }
@@ -455,42 +455,42 @@ string_new_push_pop_test(void)
 	/* PART I: dumb_string_new */
 	s = dumb_string_new(arena);
 
-	if (s.chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (s._chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp(s._chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s._count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* PART II: dumb_string_push */
 	dumb_string_push(arena, &s, 'A');
-	if (strcmp(s.chars, "A"))  { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp(s._chars, "A"))  { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._count != 1)          { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s._count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_push(arena, &s, 'B');
-	if (strcmp(s.chars, "AB")) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp(s._chars, "AB")) { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._count != 2)          { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s._count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* PART III: dumb_string_pop */
 	dumb_string_pop(&s);
-	if (strcmp(s.chars, "A"))  { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp(s._chars, "A"))  { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._count != 1)          { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s._count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_pop(&s);
-	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp(s._chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s._count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_pop(&s);
-	if (s.chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (s._chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp(s._chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s._count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_pop(&s);
-	if (s.chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (s._chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp(s._chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
  	if (s._capacity < s._count) { passed = 0; DUMB_PRINT_FAILURE(); }
 
@@ -500,7 +500,7 @@ string_new_push_pop_test(void)
 
 	for (i = 0; i < s._capacity; i++)
 	{
-		if (s.chars[i] != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
+		if (s._chars[i] != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 	}
 	if (s._count != 0)                   { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (s._capacity != string_capacity) { passed = 0; DUMB_PRINT_FAILURE(); }
@@ -570,7 +570,7 @@ string_utf8_test(void)
 
 	for (i = 0; i < s._count; i++)
 	{
-		if (s.chars[i] != codepoints[i]) { passed = 0; DUMB_PRINT_FAILURE(); break; }
+		if (s._chars[i] != codepoints[i]) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
 
 	dumb_arena_destroy(arena);
@@ -613,7 +613,7 @@ string_split_by_char_test(void)
 		Dumb_String *ps = (Dumb_String *) dumb_array_get(&strings, i);
 		Dumb_String  s  = *ps;
 
-		int result = strcmp(s.chars, test_strings[i]);
+		int result = strcmp(s._chars, test_strings[i]);
 		if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
 
@@ -644,7 +644,7 @@ string_trim_whitespace_test(void)
 
 	dumb_string_trim_whitespace(&str);
 
-	int result = strcmp(str.chars, "Hello, sailor!");
+	int result = strcmp(str._chars, "Hello, sailor!");
 	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* Part II: */
@@ -652,7 +652,7 @@ string_trim_whitespace_test(void)
 
 	dumb_string_trim_whitespace(&str);
 
-	result = strcmp(str.chars, "");
+	result = strcmp(str._chars, "");
 	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_arena_destroy(arena);

@@ -202,7 +202,7 @@ typedef struct Dumb_Array {
 } Dumb_Array; /* @NOTE(Honza): Switch to macro approach? */
 
 typedef struct Dumb_String {
-	char   *chars;
+	char   *_chars;
 	size_t  _count;
 	size_t  _capacity;
 } Dumb_String;
@@ -628,17 +628,17 @@ dumb_string_new_precise(Dumb_Arena *arena, size_t capacity)
 	if (capacity < 2) { capacity = 2; }
 
 	s._count     = 0;
-	s._capacity = capacity;
-	s.chars     = (char *)dumb_arena_push(arena, s._capacity);
+	s._capacity  = capacity;
+	s._chars     = (char *)dumb_arena_push(arena, s._capacity);
 /*
 	'malloc' doesn't initialize the memory,
 	so we do this to prevent weird interop issues with c strings.
 	Still costs a few instructions, but it should be less than 'calloc'.
 */
-	s.chars[0]  = '\0';
+	s._chars[0]  = '\0';
 
 	/* @NOTE(Honza): Maybe check always? */
-	DUMB_ASSERT(s.chars != NULL)
+	DUMB_ASSERT(s._chars != NULL)
 
 	return s;
 }
@@ -661,7 +661,7 @@ dumb_string_from(Dumb_Arena *arena, const char *str)
 void
 dumb_string_clear(Dumb_String *str)
 {
-	dumb_memset(str->chars, 0, str->_count);
+	dumb_memset(str->_chars, 0, str->_count);
 	str->_count = 0;
 }
 
@@ -678,9 +678,9 @@ dumb_string_push(Dumb_Arena *arena, Dumb_String *str, char c)
 	{
 		PRIVATE_dumb_string_change_capacity(arena, str, (str->_capacity * 2));
 	}
-	str->chars[str->_count] = c;
+	str->_chars[str->_count] = c;
 	str->_count++;
-	str->chars[str->_count] = '\0'; /* @NOTE(Honza): see the comment at the top of the function. */
+	str->_chars[str->_count] = '\0'; /* @NOTE(Honza): see the comment at the top of the function. */
 }
 
 char
@@ -692,9 +692,9 @@ dumb_string_pop(Dumb_String *str)
 	if (str->_count == 0) { return '\0'; }
 
 	index = str->_count - 1;
-	result = str->chars[index];
+	result = str->_chars[index];
 
-	str->chars[index] = '\0';
+	str->_chars[index] = '\0';
 	str->_count--;
 
 	return result;
@@ -717,11 +717,11 @@ dumb_string_append(Dumb_Arena *arena, Dumb_String *str_a, const char *str_b)
 		{
 			PRIVATE_dumb_string_change_capacity(arena, str_a, (str_a->_capacity * 2));
 		}
-		str_a->chars[str_a->_count] = str_b[i];
+		str_a->_chars[str_a->_count] = str_b[i];
 		str_a->_count++;
 		i++;
 	}
-	str_a->chars[str_a->_count] = '\0'; /* @NOTE(Honza): see the comment at the top of the function. */
+	str_a->_chars[str_a->_count] = '\0'; /* @NOTE(Honza): see the comment at the top of the function. */
 }
 
 Dumb_Array
@@ -734,11 +734,11 @@ dumb_string_split_by_char(Dumb_Arena *arena, Dumb_String *str, char c)
 
 	for (i = 0; i < str->_count; i++)
 	{
-		char current = str->chars[i];
+		char current = str->_chars[i];
 
 		if (current == c)
 		{
-			Dumb_String buf_2 = dumb_string_from(arena, buf.chars);
+			Dumb_String buf_2 = dumb_string_from(arena, buf._chars);
 			dumb_array_add(arena, &result, &buf_2);
 
 			buf = dumb_string_new(arena);
@@ -761,20 +761,20 @@ dumb_string_trim_whitespace(Dumb_String *str)
 	low_index = 0;
 	high_index = str->_count;
 
-	while ((low_index < str->_count) && (str->chars[low_index] <= 0x20))
+	while ((low_index < str->_count) && (str->_chars[low_index] <= 0x20))
 	{
 		low_index++;
 	}
 
-	while ((high_index > low_index) && (str->chars[high_index] <= 0x20))
+	while ((high_index > low_index) && (str->_chars[high_index] <= 0x20))
 	{
 		high_index--;
 	}
 
 	str->_count = high_index - low_index + 1;
-	dumb_memcpy(str->chars, (str->chars + low_index), str->_count);
+	dumb_memcpy(str->_chars, (str->_chars + low_index), str->_count);
 	/* @NOTE(Honza): Should I set the next bytes to 0 as well? */
-	str->chars[str->_count] = '\0';
+	str->_chars[str->_count] = '\0';
 }
 
 int
@@ -788,8 +788,8 @@ dumb_string_compare(Dumb_String *str_a, Dumb_String *str_b)
 	if (str_a->_count != str_b->_count) { return 0; }
 
 
-	result = dumb_memcmp((void *)str_a->chars,
-	                     (void *)str_b->chars,
+	result = dumb_memcmp((void *)str_a->_chars,
+	                     (void *)str_b->_chars,
 	                     str_a->_count);
 
 	/* @NOTE(Honza): dumb_memcp returns 1 or -1
@@ -807,8 +807,8 @@ PRIVATE_dumb_string_change_capacity(Dumb_Arena *arena, Dumb_String *str, size_t 
 	DUMB_ASSERT(tmp != NULL)
 
 	/* @NOTE(Honza): Should this be count? Or Min(new_capacity, str->_capacity)? */
-	dumb_memcpy(tmp, str->chars, str->_capacity);
-	str->chars = (char *) tmp;
+	dumb_memcpy(tmp, str->_chars, str->_capacity);
+	str->_chars = (char *) tmp;
 	str->_capacity = new_capacity;
 }
 
