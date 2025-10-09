@@ -4,7 +4,7 @@ dumb_lib_tests.c - tests for dumb_lib.h
 
 ===============================================================================
 
-version 0.4.2
+version 0.5.0
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -52,8 +52,8 @@ void array_add_get_large_test(void);
 void array_pop_test(void);
 
 void string_from_test(void);
-void string_new_append_string_test(void);
-void string_new_push_pop_test(void);
+void string_create_append_string_test(void);
+void string_create_push_pop_test(void);
 void string_utf8_test(void);
 void string_split_by_char_test(void);
 void string_trim_whitespace_test(void);
@@ -70,8 +70,8 @@ main(void)
 	array_pop_test();
 
 	string_from_test();
-	string_new_append_string_test();
-	string_new_push_pop_test();
+	string_create_append_string_test();
+	string_create_push_pop_test();
 	string_utf8_test();
 	string_split_by_char_test();
 	string_trim_whitespace_test();
@@ -142,7 +142,7 @@ arena_test(void)
 
 	int i;
 	Dumb_Arena *arena;
-	char *str;
+	unsigned char *str;
 
 	printf("%-50s", "Running 'arena_test()'... ");
 
@@ -155,13 +155,13 @@ arena_test(void)
 
 	for (i = 0; i < arena->_current->_capacity; i++)
 	{
-		char current_byte = arena->_current->_memory[i];
+		unsigned char current_byte = arena->_current->_memory[i];
 		if (current_byte != 0) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
 
 	/* PART II: */
 	#define MAGICAL_VALUE (DUMB_ARENA_MIN_CAPACITY + 300)
-	str = (char *)dumb_arena_push(arena, MAGICAL_VALUE);
+	str = (unsigned char *)dumb_arena_push(arena, MAGICAL_VALUE);
 	if (arena->_current->_capacity < MAGICAL_VALUE) { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (arena->_current->_position < MAGICAL_VALUE) { passed = 0; DUMB_PRINT_FAILURE(); }
 
@@ -197,26 +197,26 @@ array_add_get_test(void)
 	passed = 1;
 	arena = dumb_arena_create(0);
 
-	/* PART I: dumb_array_init */
-	a = dumb_array_init(arena, sizeof(i));
-	if (a.count != 0)              { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (a._capacity < a.count)     { passed = 0; DUMB_PRINT_FAILURE(); }
+	/* PART I: dumb_array_create */
+	a = dumb_array_create(arena, sizeof(i));
+	if (a._count != 0)             { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._capacity < a._count)    { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._elem_size != sizeof(i)) { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._elements == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
 
-	/* PART II: dumb_array_add */
+	/* PART II: dumb_array_push */
 	for (i = 0; i < 10; i++)
 	{
 		int x = i * E;
-		dumb_array_add(arena, &a, &x);
+		dumb_array_push(arena, &a, &x);
 
-		if (a.count != (i + 1))    { passed = 0; DUMB_PRINT_FAILURE(); break; }
-		if (a._capacity < a.count) { passed = 0; DUMB_PRINT_FAILURE(); break; }
+		if (a._count != (i + 1))    { passed = 0; DUMB_PRINT_FAILURE(); break; }
+		if (a._capacity < a._count) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
 	if (a._elements == NULL) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* PART III: dumb_array_get */
-	for (i = 0; i < a.count; i++)
+	for (i = 0; i < a._count; i++)
 	{
 		int *px = (int *) dumb_array_get(&a, i);
 		int x = *px;
@@ -227,16 +227,16 @@ array_add_get_test(void)
 
 	/* PART IV: dumb_array_clear */
 	size_t array_capacity = a._capacity;
-	size_t array_count = a.count;
+	size_t array_count = a._count;
 	dumb_array_clear(&a);
 
 	for (i = 0; i < array_count; i++)
 	{
-		char *elements_ptr = (char *)a._elements;
+		unsigned char *elements_ptr = a._elements;
 		int result = *(int *)(elements_ptr + (a._elem_size * i));
 		if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 	}
-	if (a.count != 0)                  { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._count != 0)                 { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._capacity != array_capacity) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_arena_destroy(arena);
@@ -263,22 +263,22 @@ array_add_get_large_test(void)
 	/* Intentionally 0, to stress-test the arena implementation */
 	arena = dumb_arena_create(0);
 
-	/* PART I: dumb_array_init */
-	a = dumb_array_init_precise(arena, sizeof(i), COUNT);
-	if (a.count != 0)              { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (a._capacity < a.count)     { passed = 0; DUMB_PRINT_FAILURE(); }
+	/* PART I: dumb_array_create */
+	a = dumb_array_create_precise(arena, sizeof(i), COUNT);
+	if (a._count != 0)             { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._capacity < a._count)    { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._elem_size != sizeof(i)) { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._elements == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
 
-	/* PART II: dumb_array_add */
+	/* PART II: dumb_array_push */
 	for (i = 0; i < COUNT; i++)
 	{
 		x = i;
-		dumb_array_add(arena, &a, &x);
+		dumb_array_push(arena, &a, &x);
 	}
 
 	/* PART III: dumb_array_get */
-	for (i = 0; i < a.count; i++)
+	for (i = 0; i < a._count; i++)
 	{
 		int *px = (int *) dumb_array_get(&a, i);
 		int x = *px;
@@ -286,22 +286,22 @@ array_add_get_large_test(void)
 		if (x != i) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
 
-	if (a.count      != COUNT) { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (a._capacity   < COUNT) { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (a._elements  == NULL)  { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._count      != COUNT) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._capacity   < COUNT)  { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._elements  == NULL)   { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* PART IV: dumb_array_clear */
 	size_t array_capacity = a._capacity;
-	size_t array_count = a.count;
+	size_t array_count = a._count;
 	dumb_array_clear(&a);
 
 	for (i = 0; i < array_count; i++)
 	{
-		char *elements_ptr = (char *)a._elements;
+		unsigned char *elements_ptr = a._elements;
 		int result = *(int *)(elements_ptr + (a._elem_size * i));
 		if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 	}
-	if (a.count != 0)                  { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (a._count != 0)                 { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._capacity != array_capacity) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_arena_destroy(arena);
@@ -327,29 +327,29 @@ array_pop_test(void)
 	passed = 1;
 	arena = dumb_arena_create(0);
 
-	/* PART I: dumb_array_init */
-	arr = dumb_array_init(arena, sizeof(x));
-	if (arr.count != 0)              { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (arr._capacity < arr.count)     { passed = 0; DUMB_PRINT_FAILURE(); }
+	/* PART I: dumb_array_create */
+	arr = dumb_array_create(arena, sizeof(x));
+	if (arr._count != 0)             { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (arr._capacity < arr._count)  { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (arr._elem_size != sizeof(x)) { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (arr._elements == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
 
-	/* PART II: dumb_array_add */
+	/* PART II: dumb_array_push */
 	for (i = 0; i < 128; i++)
 	{
 		x = i * 3.14;
-		dumb_array_add(arena, &arr, &x);
+		dumb_array_push(arena, &arr, &x);
 
-		if (arr.count != (i + 1))      { passed = 0; DUMB_PRINT_FAILURE(); break; }
-		if (arr._capacity < arr.count) { passed = 0; DUMB_PRINT_FAILURE(); break; }
+		if (arr._count != (i + 1))      { passed = 0; DUMB_PRINT_FAILURE(); break; }
+		if (arr._capacity < arr._count) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
 	if (arr._elements == NULL) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* PART III: dumb_array_pop */
-	dumb_array_pop(&arr, (char *)&float_buf);
+	dumb_array_pop(&arr, (unsigned char *)&float_buf);
 
-	if (float_buf != x)       { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (arr.count != (i - 1)) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (float_buf != x)        { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (arr._count != (i - 1)) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_arena_destroy(arena);
 
@@ -371,10 +371,10 @@ string_from_test(void)
 	arena = dumb_arena_create(0);
 
 	s = dumb_string_from(arena, "Hello, World!");
-	if (s.chars == NULL)                  { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (strcmp(s.chars, "Hello, World!")) { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s.count != 13)                    { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (s._chars == NULL)                          { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp((char *)s._chars, "Hello, World!")) { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._count != 13)                            { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s._count)                    { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_arena_destroy(arena);
 
@@ -383,7 +383,7 @@ string_from_test(void)
 }
 
 void
-string_new_append_string_test(void)
+string_create_append_string_test(void)
 {
 	int passed;
 
@@ -392,33 +392,33 @@ string_new_append_string_test(void)
 	Dumb_Arena  *arena;
 	Dumb_String  s;
 
-	printf("%-50s", "Running 'string_new_append_string_test()'... ");
+	printf("%-50s", "Running 'string_create_append_string_test()'... ");
 
 	passed = 1;
 	arena = dumb_arena_create(0);
 
-	/* PART I: dumb_string_new */
-	s = dumb_string_new(arena);
-	if (s.chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s.count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
+	/* PART I: dumb_string_create */
+	s = dumb_string_create(arena);
+	if (s._chars == NULL)             { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp((char *)s._chars, "")) { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._count != 0)                { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s._count)       { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* PART II: dumb_string_append */
 	dumb_string_append(arena, &s, "Hello");
-	if (strcmp(s.chars, "Hello")) { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s.count != 5)             { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s._capacity < s.count)    { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp((char *)s._chars, "Hello")) { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._count != 5)                     { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s._count)            { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_append(arena, &s, ", ");
-	if (strcmp(s.chars, "Hello, ")) { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s.count != 7)               { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s._capacity < s.count)      { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp((char *)s._chars, "Hello, ")) { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._count != 7)                       { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s._count)              { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_append(arena, &s, "World!");
-	if (strcmp(s.chars, "Hello, World!")) { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s.count != 13)                    { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s._capacity < s.count)            { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp((char *)s._chars, "Hello, World!")) { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._count != 13)                            { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s._count)                    { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* PART III: dumb_string_clear */
 	size_t string_capacity = s._capacity;
@@ -426,9 +426,9 @@ string_new_append_string_test(void)
 
 	for (i = 0; i < s._capacity; i++)
 	{
-		if (s.chars[i] != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
+		if (s._chars[i] != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 	}
-	if (s.count != 0)                   { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (s._count != 0)                  { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (s._capacity != string_capacity) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_arena_destroy(arena);
@@ -438,7 +438,7 @@ string_new_append_string_test(void)
 }
 
 void
-string_new_push_pop_test(void)
+string_create_push_pop_test(void)
 {
 	int passed;
 
@@ -447,52 +447,52 @@ string_new_push_pop_test(void)
 	Dumb_Arena  *arena;
 	Dumb_String  s;
 
-	printf("%-50s", "Running 'string_new_push_pop_test()'... ");
+	printf("%-50s", "Running 'string_create_push_pop_test()'... ");
 
 	passed = 1;
 	arena = dumb_arena_create(0);
 
-	/* PART I: dumb_string_new */
-	s = dumb_string_new(arena);
+	/* PART I: dumb_string_create */
+	s = dumb_string_create(arena);
 
-	if (s.chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s.count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (s._chars == NULL)             { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp((char *)s._chars, "")) { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._count != 0)                { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s._count)       { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* PART II: dumb_string_push */
 	dumb_string_push(arena, &s, 'A');
-	if (strcmp(s.chars, "A"))  { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s.count != 1)          { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp((char *)s._chars, "A")) { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._count != 1)                 { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s._count)        { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_push(arena, &s, 'B');
-	if (strcmp(s.chars, "AB")) { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s.count != 2)          { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp((char *)s._chars, "AB")) { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._count != 2)                  { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s._count)         { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* PART III: dumb_string_pop */
 	dumb_string_pop(&s);
-	if (strcmp(s.chars, "A"))  { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s.count != 1)          { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp((char *)s._chars, "A")) { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._count != 1)                 { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s._count)        { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_pop(&s);
-	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s.count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp((char *)s._chars, "")) { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._count != 0)                { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s._count)       { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_pop(&s);
-	if (s.chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s.count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (s._chars == NULL)             { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp((char *)s._chars, "")) { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._count != 0)                { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s._count)       { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_string_pop(&s);
-	if (s.chars == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
-	if (strcmp(s.chars, ""))   { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s.count != 0)          { passed = 0; DUMB_PRINT_FAILURE(); }
- 	if (s._capacity < s.count) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (s._chars == NULL)             { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (strcmp((char *)s._chars, "")) { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._count != 0)                { passed = 0; DUMB_PRINT_FAILURE(); }
+ 	if (s._capacity < s._count)       { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* PART IV: dumb_string_clear */
 	size_t string_capacity = s._capacity;
@@ -500,9 +500,9 @@ string_new_push_pop_test(void)
 
 	for (i = 0; i < s._capacity; i++)
 	{
-		if (s.chars[i] != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
+		if (s._chars[i] != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 	}
-	if (s.count != 0)                   { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (s._count != 0)                  { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (s._capacity != string_capacity) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_arena_destroy(arena);
@@ -529,26 +529,26 @@ string_utf8_test(void)
 
 #ifdef WDD_C_PLUS_PLUS_TESTS
 /* Almost forgot how great C++ is, how much more productive it makes you & how incredibly readable it is! Sigh... */
-	char codepoints[] = {
-	         static_cast<signed char>(0xc4), static_cast<signed char>(0x9b), static_cast<signed char>(0x20), static_cast<signed char>(0xc5), static_cast<signed char>(0xa1),
-	         static_cast<signed char>(0x20), static_cast<signed char>(0xc4), static_cast<signed char>(0x8d), static_cast<signed char>(0x20), static_cast<signed char>(0xc5),
-	         static_cast<signed char>(0x99), static_cast<signed char>(0x20), static_cast<signed char>(0xc5), static_cast<signed char>(0xbe), static_cast<signed char>(0x20),
-	         static_cast<signed char>(0xc3), static_cast<signed char>(0xbd), static_cast<signed char>(0x20), static_cast<signed char>(0xc3), static_cast<signed char>(0xa1),
-	         static_cast<signed char>(0x20), static_cast<signed char>(0xc3), static_cast<signed char>(0xad), static_cast<signed char>(0x20), static_cast<signed char>(0xc3),
-	         static_cast<signed char>(0xa9), static_cast<signed char>(0x20), static_cast<signed char>(0xc3), static_cast<signed char>(0xba), static_cast<signed char>(0x20),
-	         static_cast<signed char>(0xc5), static_cast<signed char>(0xaf), static_cast<signed char>(0x20), static_cast<signed char>(0xc3), static_cast<signed char>(0xb3),
-	         static_cast<signed char>(0x20), static_cast<signed char>(0xc5), static_cast<signed char>(0xa5), static_cast<signed char>(0x0a), static_cast<signed char>(0xc4),
-	         static_cast<signed char>(0x9a), static_cast<signed char>(0x20), static_cast<signed char>(0xc5), static_cast<signed char>(0xa0), static_cast<signed char>(0x20),
-	         static_cast<signed char>(0xc4), static_cast<signed char>(0x8c), static_cast<signed char>(0x20), static_cast<signed char>(0xc5), static_cast<signed char>(0x98),
-	         static_cast<signed char>(0x20), static_cast<signed char>(0xc5), static_cast<signed char>(0xbd), static_cast<signed char>(0x20), static_cast<signed char>(0xc3),
-	         static_cast<signed char>(0x9d), static_cast<signed char>(0x20), static_cast<signed char>(0xc3), static_cast<signed char>(0x81), static_cast<signed char>(0x20),
-	         static_cast<signed char>(0xc3), static_cast<signed char>(0x8d), static_cast<signed char>(0x20), static_cast<signed char>(0xc3), static_cast<signed char>(0x89),
-	         static_cast<signed char>(0x20), static_cast<signed char>(0xc3), static_cast<signed char>(0x9a), static_cast<signed char>(0x20), static_cast<signed char>(0xc5),
-	         static_cast<signed char>(0xae), static_cast<signed char>(0x20), static_cast<signed char>(0xc3), static_cast<signed char>(0x93), static_cast<signed char>(0x20),
-	         static_cast<signed char>(0xc5), static_cast<signed char>(0xa4),
+	unsigned char codepoints[] = {
+	         static_cast<unsigned char>(0xc4), static_cast<unsigned char>(0x9b), static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc5), static_cast<unsigned char>(0xa1),
+	         static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc4), static_cast<unsigned char>(0x8d), static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc5),
+	         static_cast<unsigned char>(0x99), static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc5), static_cast<unsigned char>(0xbe), static_cast<unsigned char>(0x20),
+	         static_cast<unsigned char>(0xc3), static_cast<unsigned char>(0xbd), static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc3), static_cast<unsigned char>(0xa1),
+	         static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc3), static_cast<unsigned char>(0xad), static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc3),
+	         static_cast<unsigned char>(0xa9), static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc3), static_cast<unsigned char>(0xba), static_cast<unsigned char>(0x20),
+	         static_cast<unsigned char>(0xc5), static_cast<unsigned char>(0xaf), static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc3), static_cast<unsigned char>(0xb3),
+	         static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc5), static_cast<unsigned char>(0xa5), static_cast<unsigned char>(0x0a), static_cast<unsigned char>(0xc4),
+	         static_cast<unsigned char>(0x9a), static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc5), static_cast<unsigned char>(0xa0), static_cast<unsigned char>(0x20),
+	         static_cast<unsigned char>(0xc4), static_cast<unsigned char>(0x8c), static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc5), static_cast<unsigned char>(0x98),
+	         static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc5), static_cast<unsigned char>(0xbd), static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc3),
+	         static_cast<unsigned char>(0x9d), static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc3), static_cast<unsigned char>(0x81), static_cast<unsigned char>(0x20),
+	         static_cast<unsigned char>(0xc3), static_cast<unsigned char>(0x8d), static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc3), static_cast<unsigned char>(0x89),
+	         static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc3), static_cast<unsigned char>(0x9a), static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc5),
+	         static_cast<unsigned char>(0xae), static_cast<unsigned char>(0x20), static_cast<unsigned char>(0xc3), static_cast<unsigned char>(0x93), static_cast<unsigned char>(0x20),
+	         static_cast<unsigned char>(0xc5), static_cast<unsigned char>(0xa4),
 	                    };
 #else
-	char codepoints[] = {
+	unsigned char codepoints[] = {
 	         0xc4, 0x9b, 0x20, 0xc5, 0xa1,
 	         0x20, 0xc4, 0x8d, 0x20, 0xc5,
 	         0x99, 0x20, 0xc5, 0xbe, 0x20,
@@ -568,9 +568,9 @@ string_utf8_test(void)
 	                    };
 #endif
 
-	for (i = 0; i < s.count; i++)
+	for (i = 0; i < s._count; i++)
 	{
-		if (s.chars[i] != codepoints[i]) { passed = 0; DUMB_PRINT_FAILURE(); break; }
+		if (s._chars[i] != codepoints[i]) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
 
 	dumb_arena_destroy(arena);
@@ -608,12 +608,12 @@ string_split_by_char_test(void)
 		"Bond.",
 	};
 
-	for (i = 0; i < strings.count; i++)
+	for (i = 0; i < strings._count; i++)
 	{
 		Dumb_String *ps = (Dumb_String *) dumb_array_get(&strings, i);
 		Dumb_String  s  = *ps;
 
-		int result = strcmp(s.chars, test_strings[i]);
+		int result = strcmp((char *)s._chars, test_strings[i]);
 		if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); break; }
 	}
 
@@ -644,15 +644,15 @@ string_trim_whitespace_test(void)
 
 	dumb_string_trim_whitespace(&str);
 
-	int result = strcmp(str.chars, "Hello, sailor!");
+	int result = strcmp((char *)str._chars, "Hello, sailor!");
 	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* Part II: */
-	str = dumb_string_new(arena);
+	str = dumb_string_create(arena);
 
 	dumb_string_trim_whitespace(&str);
 
-	result = strcmp(str.chars, "");
+	result = strcmp((char *)str._chars, "");
 	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_arena_destroy(arena);
@@ -681,21 +681,35 @@ string_compare_test(void)
 	str_b = dumb_string_from(arena, "Hello, sailor!");
 
 	result = dumb_string_compare(&str_a, &str_b);
-	if (result != 1) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* Part II: */
 	str_a = dumb_string_from(arena, "Hello, sailor!");
-	str_b = dumb_string_from(arena, "Hello, Sailor!");
+	str_b = dumb_string_from(arena, "Hello, tailor!");
 
 	result = dumb_string_compare(&str_a, &str_b);
-	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (result != -1) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* Part III: */
 	str_a = dumb_string_from(arena, "Žluťoučký kůň skáče do dáli... 😊");
 	str_b = dumb_string_from(arena, "Žluťoučký kůň skáče do dáli... 😊");
 
 	result = dumb_string_compare(&str_a, &str_b);
+	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	/* Part IV: */
+	str_a = dumb_string_from(arena, "Ž");
+	str_b = dumb_string_from(arena, "Z");
+
+	result = dumb_string_compare(&str_a, &str_b);
 	if (result != 1) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	/* Part V: */
+	str_a = dumb_string_from(arena, "Aragorn");
+	str_b = dumb_string_from(arena, "Gimli");
+
+	result = dumb_string_compare(&str_a, &str_b);
+	if (result != -1) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_arena_destroy(arena);
 
