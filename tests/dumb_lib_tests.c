@@ -4,7 +4,7 @@ dumb_lib_tests.c - tests for dumb_lib.h
 
 ===============================================================================
 
-version 0.4.1
+version 0.4.2
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -49,6 +49,7 @@ void arena_test(void);
 
 void array_add_get_test(void);
 void array_add_get_large_test(void);
+void array_pop_test(void);
 
 void string_from_test(void);
 void string_new_append_string_test(void);
@@ -66,6 +67,7 @@ main(void)
 
 	array_add_get_test();
 	array_add_get_large_test();
+	array_pop_test();
 
 	string_from_test();
 	string_new_append_string_test();
@@ -301,6 +303,53 @@ array_add_get_large_test(void)
 	}
 	if (a.count != 0)                  { passed = 0; DUMB_PRINT_FAILURE(); }
 	if (a._capacity != array_capacity) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	dumb_arena_destroy(arena);
+
+	if (passed) { printf("%50s", "\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("%50s", "\033[1;31mFAILED\033[0m\n"); }
+}
+
+void
+array_pop_test(void)
+{
+	int passed;
+
+	int i;
+	float x;
+	float float_buf;
+
+	Dumb_Arena *arena;
+	Dumb_Array  arr;
+
+	printf("%-50s", "Running 'array_pop_test()'... ");
+
+	passed = 1;
+	arena = dumb_arena_create(0);
+
+	/* PART I: dumb_array_init */
+	arr = dumb_array_init(arena, sizeof(x));
+	if (arr.count != 0)              { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (arr._capacity < arr.count)     { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (arr._elem_size != sizeof(x)) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (arr._elements == NULL)       { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	/* PART II: dumb_array_add */
+	for (i = 0; i < 128; i++)
+	{
+		x = i * 3.14;
+		dumb_array_add(arena, &arr, &x);
+
+		if (arr.count != (i + 1))      { passed = 0; DUMB_PRINT_FAILURE(); break; }
+		if (arr._capacity < arr.count) { passed = 0; DUMB_PRINT_FAILURE(); break; }
+	}
+	if (arr._elements == NULL) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	/* PART III: dumb_array_pop */
+	dumb_array_pop(&arr, (char *)&float_buf);
+
+	if (float_buf != x)       { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (arr.count != (i - 1)) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_arena_destroy(arena);
 

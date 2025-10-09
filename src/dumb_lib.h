@@ -4,7 +4,7 @@ dumb_lib.h - something like my personal "standard library"/"C extension".
 
 ===============================================================================
 
-version 0.4.1
+version 0.4.2
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -198,7 +198,7 @@ typedef struct Dumb_Array {
 	size_t  count;
 	size_t  _capacity;
 	size_t  _elem_size;
-	void   *_elements;
+	void   *_elements; /* @TODO(Honza): Try switching to char * in next major version. */
 } Dumb_Array; /* @NOTE(Honza): Switch to macro approach? */
 
 typedef struct Dumb_String {
@@ -260,6 +260,13 @@ Rename to dumb_array_push in next mejor version.
 */
 void
 dumb_array_add(Dumb_Arena *arena, Dumb_Array *a, void *new_elem);
+
+/*
+   @NOTE: User MUST supply a return buffer ('ret_buf')
+   of at least the size of the array element!
+*/
+void
+dumb_array_pop(Dumb_Array *arr, char *ret_buf);
 
 void *
 dumb_array_get(Dumb_Array *a, size_t index);
@@ -572,6 +579,25 @@ dumb_array_add(Dumb_Arena *arena, Dumb_Array *a, void *new_elem)
 	new_elem_destination = (char *) a->_elements + (a->count * a->_elem_size);
 	dumb_memcpy(new_elem_destination, new_elem, a->_elem_size);
 	a->count++;
+}
+
+void
+dumb_array_pop(Dumb_Array *arr, char *ret_buf)
+{
+	char *elem_ptr;
+
+	/*
+	   @NOTE(Honza): Should this crash?
+	   Or fill ret_buf with 0xCDCDCDCD or something?
+	*/
+	if (arr->count == 0) { return; }
+
+	arr->count--;
+
+	elem_ptr = (char *)arr->_elements + (arr->count * arr->_elem_size);
+	dumb_memcpy(ret_buf, elem_ptr, arr->_elem_size);
+
+	dumb_memset(elem_ptr, 0, arr->_elem_size);
 }
 
 void *
