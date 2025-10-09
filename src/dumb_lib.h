@@ -710,32 +710,40 @@ dumb_string_trim_whitespace(Dumb_String *str)
 }
 
 /*
-Returns 1 if the strings are the same, returns 0 if they differ.
+Returns 0  if the strings are the same.
+Returns 1  if str_a is "greater than" str_b.
+Returns -1 if str_a is "less than" str_b.
 
 @NOTE(Honza): At least for now, this is a simple byte by byte comparison.
 Due to the nature of how UTF-8 strings can be encoded,
 two strings that appear identical to the reader may result
-in the function returning '0'.
+in the function returning a non-zero value.
  */
 int
 dumb_string_compare(Dumb_String *str_a, Dumb_String *str_b)
 {
-	/* @TODO(Honza): Reimplement */
 	/* @NOTE(Honza): Should this function behave more like
 	   string comparison in Swift's stdlib? */
 	int result;
 
-	if (str_a->_count != str_b->_count) { return 0; }
+	if (str_a->_count > str_b->_count)
+	{
+		result = dumb_memcmp((void *)str_a->_chars, (void *)str_b->_chars, str_b->_count);
 
+		if (result == 0) { return 1; }
+		else             { return result; }
+	}
+	else if (str_a->_count < str_b->_count)
+	{
+		result = dumb_memcmp((void *)str_a->_chars, (void *)str_b->_chars, str_a->_count);
 
-	result = dumb_memcmp((void *)str_a->_chars,
-	                     (void *)str_b->_chars,
-	                     str_a->_count);
-
-	/* @NOTE(Honza): dumb_memcp returns 1 or -1
-	   if the memory differs and 0 if it's the same */
-	if (result == 0) { return 1; }
-	else             { return 0; }
+		if (result == 0) { return -1; }
+		else             { return result; }
+	}
+	else
+	{
+		return dumb_memcmp((void *)str_a->_chars, (void *)str_b->_chars, str_a->_count);
+	}
 }
 
 void
@@ -751,10 +759,6 @@ PRIVATE_dumb_string_change_capacity(Dumb_Arena *arena, Dumb_String *str, size_t 
 	str->_chars = (char *) tmp;
 	str->_capacity = new_capacity;
 }
-
-/* --- |RANDOM IMPLEMENTATION| --- */
-
-/* --- |FILE OPERATIONS IMPLEMENTATION| --- */
 
 #endif /* DUMB_LIB_IMPLEMENTATION */
 

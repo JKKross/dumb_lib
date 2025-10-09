@@ -681,21 +681,35 @@ string_compare_test(void)
 	str_b = dumb_string_from(arena, "Hello, sailor!");
 
 	result = dumb_string_compare(&str_a, &str_b);
-	if (result != 1) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* Part II: */
 	str_a = dumb_string_from(arena, "Hello, sailor!");
-	str_b = dumb_string_from(arena, "Hello, Sailor!");
+	str_b = dumb_string_from(arena, "Hello, tailor!");
 
 	result = dumb_string_compare(&str_a, &str_b);
-	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (result != -1) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* Part III: */
 	str_a = dumb_string_from(arena, "Žluťoučký kůň skáče do dáli... 😊");
 	str_b = dumb_string_from(arena, "Žluťoučký kůň skáče do dáli... 😊");
 
 	result = dumb_string_compare(&str_a, &str_b);
+	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	/* Part IV: */
+	str_a = dumb_string_from(arena, "Ž");
+	str_b = dumb_string_from(arena, "Z");
+
+	result = dumb_string_compare(&str_a, &str_b);
 	if (result != 1) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	/* Part V: */
+	str_a = dumb_string_from(arena, "Aragorn");
+	str_b = dumb_string_from(arena, "Gimli");
+
+	result = dumb_string_compare(&str_a, &str_b);
+	if (result != -1) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_arena_destroy(arena);
 
