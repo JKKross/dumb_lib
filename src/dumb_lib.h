@@ -209,14 +209,9 @@ typedef struct Dumb_String {
 
 /* --- |MEMORY| --- */
 
-void
-dumb_memcpy(void *to, void *from, size_t num_bytes);
-
-int
-dumb_memcmp(void *a, void *b, size_t num_bytes);
-
-void
-dumb_memset(void *memory, unsigned char byte, size_t num_bytes);
+void dumb_memcpy(void *to, void *from, size_t num_bytes);
+int  dumb_memcmp(void *a, void *b, size_t num_bytes);
+void dumb_memset(void *memory, unsigned char byte, size_t num_bytes);
 
 /*
 @TODO(Honza):
@@ -224,17 +219,10 @@ dumb_memset(void *memory, unsigned char byte, size_t num_bytes);
 Everything should be either create/destroy, init/deinit or new/delete.
 Change in the next major version.
 */
-Dumb_Arena *
-dumb_arena_create(size_t size);
-
-void
-dumb_arena_destroy(Dumb_Arena *arena);
-
-void *
-dumb_arena_push(Dumb_Arena *arena, size_t size);
-
-void
-dumb_arena_pop(Dumb_Arena *arena, size_t size);
+Dumb_Arena *dumb_arena_create(size_t size);
+void        dumb_arena_destroy(Dumb_Arena *arena);
+void       *dumb_arena_push(Dumb_Arena *arena, size_t size);
+void        dumb_arena_pop(Dumb_Arena *arena, size_t size);
 
 /* --- |ARRAY| --- */
 
@@ -244,32 +232,23 @@ dumb_arena_pop(Dumb_Arena *arena, size_t size);
 Everything should be either create/destroy, init/deinit or new/delete.
 Change in the next major version.
 */
-Dumb_Array
-dumb_array_init(Dumb_Arena *arena, size_t elem_size);
-
-Dumb_Array
-dumb_array_init_precise(Dumb_Arena *arena, size_t elem_size, size_t number_of_elems);
-
-void
-dumb_array_clear(Dumb_Array *array);
+Dumb_Array dumb_array_init(Dumb_Arena *arena, size_t elem_size);
+Dumb_Array dumb_array_init_precise(Dumb_Arena *arena, size_t elem_size, size_t number_of_elems);
+void       dumb_array_clear(Dumb_Array *array);
 
 /*
 @TODO(Honza):
 
 Rename to dumb_array_push in next mejor version.
 */
-void
-dumb_array_add(Dumb_Arena *arena, Dumb_Array *a, void *new_elem);
+void dumb_array_add(Dumb_Arena *arena, Dumb_Array *a, void *new_elem);
 
 /*
    @NOTE: User MUST supply a return buffer ('ret_buf')
    of at least the size of the array element!
 */
-void
-dumb_array_pop(Dumb_Array *arr, char *ret_buf);
-
-void *
-dumb_array_get(Dumb_Array *a, size_t index);
+void  dumb_array_pop(Dumb_Array *arr, char *ret_buf);
+void *dumb_array_get(Dumb_Array *a, size_t index);
 
 /* --- |STRING| --- */
 
@@ -279,32 +258,15 @@ dumb_array_get(Dumb_Array *a, size_t index);
 Everything should be either create/destroy, init/deinit or new/delete.
 Change in the next major version.
 */
-Dumb_String
-dumb_string_new(Dumb_Arena *arena);
-
-Dumb_String
-dumb_string_new_precise(Dumb_Arena *arena, size_t capacity);
-
-Dumb_String
-dumb_string_from(Dumb_Arena *arena, const char *str);
-
-void
-dumb_string_clear(Dumb_String *str);
-
-void
-dumb_string_push(Dumb_Arena *arena, Dumb_String *str, char c);
-
-char
-dumb_string_pop(Dumb_String *str);
-
-void
-dumb_string_append(Dumb_Arena *arena, Dumb_String *str_a, const char *str_b);
-
-Dumb_Array
-dumb_string_split_by_char(Dumb_Arena *arena, Dumb_String *str, char c);
-
-void
-dumb_string_trim_whitespace(Dumb_String *str);
+Dumb_String dumb_string_new(Dumb_Arena *arena);
+Dumb_String dumb_string_new_precise(Dumb_Arena *arena, size_t capacity);
+Dumb_String dumb_string_from(Dumb_Arena *arena, const char *str);
+void        dumb_string_clear(Dumb_String *str);
+void        dumb_string_push(Dumb_Arena *arena, Dumb_String *str, char c);
+char        dumb_string_pop(Dumb_String *str);
+void        dumb_string_append(Dumb_Arena *arena, Dumb_String *str_a, const char *str_b);
+Dumb_Array  dumb_string_split_by_char(Dumb_Arena *arena, Dumb_String *str, char c);
+void        dumb_string_trim_whitespace(Dumb_String *str);
 
 /*
 Returns 1 if the strings are the same, returns 0 if they differ.
@@ -314,11 +276,9 @@ Due to the nature of how UTF-8 strings can be encoded,
 two strings that appear identical to the reader may result
 in the function returning '0'.
  */
-int
-dumb_string_compare(Dumb_String *str_a, Dumb_String *str_b);
+int dumb_string_compare(Dumb_String *str_a, Dumb_String *str_b);
 
-void
-PRIVATE_dumb_string_change_capacity(Dumb_Arena *arena, Dumb_String *str, size_t new_capacity);
+void PRIVATE_dumb_string_change_capacity(Dumb_Arena *arena, Dumb_String *str, size_t new_capacity);
 
 /*
 	|SECTION| - IMPLEMENTATION
