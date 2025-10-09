@@ -187,24 +187,24 @@ extern "C" {
 typedef struct Dumb_Arena Dumb_Arena;
 
 struct Dumb_Arena {
-	Dumb_Arena *_previous; /* Set to NULL on the very first arena in chain. */
-	Dumb_Arena *_current;  /* Set to NULL on all arenas except the very first one in chain. */
-	size_t      _capacity;
-	size_t      _position;
-	char       *_memory;
+	Dumb_Arena    *_previous; /* Set to NULL on the very first arena in chain. */
+	Dumb_Arena    *_current;  /* Set to NULL on all arenas except the very first one in chain. */
+	size_t         _capacity;
+	size_t         _position;
+	unsigned char *_memory;
 };
 
 typedef struct Dumb_Array {
-	size_t  _count;
-	size_t  _capacity;
-	size_t  _elem_size;
-	char   *_elements;
+	size_t         _count;
+	size_t         _capacity;
+	size_t         _elem_size;
+	unsigned char *_elements;
 } Dumb_Array; /* @NOTE(Honza): Switch to macro approach? */
 
 typedef struct Dumb_String {
-	char   *_chars;
-	size_t  _count;
-	size_t  _capacity;
+	size_t         _count;
+	size_t         _capacity;
+	unsigned char *_chars;
 } Dumb_String;
 
 /* --- |MEMORY| --- */
@@ -224,21 +224,21 @@ Dumb_Array  dumb_array_create(Dumb_Arena *arena, size_t elem_size);
 Dumb_Array  dumb_array_create_precise(Dumb_Arena *arena, size_t elem_size, size_t number_of_elems);
 void        dumb_array_clear(Dumb_Array *array);
 void        dumb_array_push(Dumb_Arena *arena, Dumb_Array *a, void *new_elem);
-void        dumb_array_pop(Dumb_Array *arr, char *ret_buf);
+void        dumb_array_pop(Dumb_Array *arr, unsigned char *ret_buf);
 void       *dumb_array_get(Dumb_Array *a, size_t index);
 
 /* --- |STRING| --- */
 
-Dumb_String dumb_string_create(Dumb_Arena *arena);
-Dumb_String dumb_string_create_precise(Dumb_Arena *arena, size_t capacity);
-Dumb_String dumb_string_from(Dumb_Arena *arena, const char *str);
-void        dumb_string_clear(Dumb_String *str);
-void        dumb_string_push(Dumb_Arena *arena, Dumb_String *str, char c);
-char        dumb_string_pop(Dumb_String *str);
-void        dumb_string_append(Dumb_Arena *arena, Dumb_String *str_a, const char *str_b);
-Dumb_Array  dumb_string_split_by_char(Dumb_Arena *arena, Dumb_String *str, char c);
-void        dumb_string_trim_whitespace(Dumb_String *str);
-int         dumb_string_compare(Dumb_String *str_a, Dumb_String *str_b);
+Dumb_String   dumb_string_create(Dumb_Arena *arena);
+Dumb_String   dumb_string_create_precise(Dumb_Arena *arena, size_t capacity);
+Dumb_String   dumb_string_from(Dumb_Arena *arena, const char *str);
+void          dumb_string_clear(Dumb_String *str);
+void          dumb_string_push(Dumb_Arena *arena, Dumb_String *str, unsigned char c);
+unsigned char dumb_string_pop(Dumb_String *str);
+void          dumb_string_append(Dumb_Arena *arena, Dumb_String *str_a, const char *str_b);
+Dumb_Array    dumb_string_split_by_char(Dumb_Arena *arena, Dumb_String *str, unsigned char c);
+void          dumb_string_trim_whitespace(Dumb_String *str);
+int           dumb_string_compare(Dumb_String *str_a, Dumb_String *str_b);
 
 void PRIVATE_dumb_string_change_capacity(Dumb_Arena *arena, Dumb_String *str, size_t new_capacity);
 
@@ -255,8 +255,8 @@ void
 dumb_memcpy(void *to, void *from, size_t num_bytes)
 {
 	size_t i;
-	char *to_char   = (char *) to;
-	char *from_char = (char *) from;
+	unsigned char *to_char   = (unsigned char *) to;
+	unsigned char *from_char = (unsigned char *) from;
 
 	for (i = 0; i < num_bytes; i++)
 	{
@@ -268,8 +268,8 @@ int
 dumb_memcmp(void *a, void *b, size_t num_bytes)
 {
 	size_t i;
-	char *aa = (char *) a;
-	char *bb = (char *) b;
+	unsigned char *aa = (unsigned char *) a;
+	unsigned char *bb = (unsigned char *) b;
 
 	for (i = 0; i < num_bytes; i++)
 	{
@@ -315,7 +315,7 @@ dumb_arena_create(size_t size)
 	new_arena->_current  = new_arena;
 	new_arena->_capacity = capacity;
 	new_arena->_position = 0;
-	new_arena->_memory   = (char *) calloc(capacity, sizeof(char));
+	new_arena->_memory   = (unsigned char *)calloc(capacity, sizeof(unsigned char));
 
 	DUMB_ASSERT(new_arena->_memory != NULL)
 
@@ -455,7 +455,7 @@ dumb_array_create_precise(Dumb_Arena *arena, size_t elem_size, size_t number_of_
 	a._count      = 0;
 	a._capacity  = elem_size * number_of_elems;
 	a._elem_size = elem_size;
-	a._elements  = (char *)dumb_arena_push(arena, a._capacity);
+	a._elements  = (unsigned char *)dumb_arena_push(arena, a._capacity);
 
 	/* @NOTE(Honza): Maybe check always? */
 	DUMB_ASSERT(a._elements != NULL)
@@ -473,15 +473,15 @@ dumb_array_clear(Dumb_Array *array)
 void
 dumb_array_push(Dumb_Arena *arena, Dumb_Array *a, void *new_elem)
 {
-	char *new_elem_destination;
+	unsigned char *new_elem_destination;
 
 	size_t  new_capacity;
-	char   *tmp;
+	unsigned char   *tmp;
 
 	if ((a->_count * a->_elem_size) == a->_capacity)
 	{
 		new_capacity = a->_capacity * 2;
-		tmp = (char *)dumb_arena_push(arena, new_capacity);
+		tmp = (unsigned char *)dumb_arena_push(arena, new_capacity);
 
 		dumb_memcpy(tmp, a->_elements, a->_capacity);
 		/*
@@ -508,9 +508,9 @@ dumb_array_push(Dumb_Arena *arena, Dumb_Array *a, void *new_elem)
    of at least the size of the array element!
 */
 void
-dumb_array_pop(Dumb_Array *arr, char *ret_buf)
+dumb_array_pop(Dumb_Array *arr, unsigned char *ret_buf)
 {
-	char *elem_ptr;
+	unsigned char *elem_ptr;
 
 	/*
 	   @NOTE(Honza): Should this crash?
@@ -529,7 +529,7 @@ dumb_array_pop(Dumb_Array *arr, char *ret_buf)
 void *
 dumb_array_get(Dumb_Array *a, size_t index)
 {
-	char *result;
+	unsigned char *result;
 
 	/* @NOTE(Honza): Maybe check always? */
 	DUMB_ASSERT(index < a->_count)
@@ -555,7 +555,7 @@ dumb_string_create_precise(Dumb_Arena *arena, size_t capacity)
 
 	s._count     = 0;
 	s._capacity  = capacity;
-	s._chars     = (char *)dumb_arena_push(arena, s._capacity);
+	s._chars     = (unsigned char *)dumb_arena_push(arena, s._capacity);
 /*
 	'malloc' doesn't initialize the memory,
 	so we do this to prevent weird interop issues with c strings.
@@ -578,7 +578,7 @@ dumb_string_from(Dumb_Arena *arena, const char *str)
 
 	while (str[i] != '\0')
 	{
-		dumb_string_push(arena, &s, str[i]);
+		dumb_string_push(arena, &s, (unsigned char)str[i]);
 		i++;
 	}
 	return s;
@@ -592,7 +592,7 @@ dumb_string_clear(Dumb_String *str)
 }
 
 void
-dumb_string_push(Dumb_Arena *arena, Dumb_String *str, char c)
+dumb_string_push(Dumb_Arena *arena, Dumb_String *str, unsigned char c)
 {
 /*
 	@NOTE(Honza): We do count + 1 because of compatibility with c-style
@@ -609,10 +609,10 @@ dumb_string_push(Dumb_Arena *arena, Dumb_String *str, char c)
 	str->_chars[str->_count] = '\0'; /* @NOTE(Honza): see the comment at the top of the function. */
 }
 
-char
+unsigned char
 dumb_string_pop(Dumb_String *str)
 {
-	char result;
+	unsigned char result;
 	size_t index;
 
 	if (str->_count == 0) { return '\0'; }
@@ -643,7 +643,7 @@ dumb_string_append(Dumb_Arena *arena, Dumb_String *str_a, const char *str_b)
 		{
 			PRIVATE_dumb_string_change_capacity(arena, str_a, (str_a->_capacity * 2));
 		}
-		str_a->_chars[str_a->_count] = str_b[i];
+		str_a->_chars[str_a->_count] = (unsigned char)str_b[i];
 		str_a->_count++;
 		i++;
 	}
@@ -651,14 +651,14 @@ dumb_string_append(Dumb_Arena *arena, Dumb_String *str_a, const char *str_b)
 }
 
 Dumb_Array
-dumb_string_split_by_char(Dumb_Arena *arena, Dumb_String *str, char c)
+dumb_string_split_by_char(Dumb_Arena *arena, Dumb_String *str, unsigned char c)
 {
 	size_t i;
 
-	Dumb_Array  result;
-	Dumb_String buf;
-	Dumb_String buf_2;
-	char current_char;
+	Dumb_Array    result;
+	Dumb_String   buf;
+	Dumb_String   buf_2;
+	unsigned char current_char;
 
 	result = dumb_array_create(arena, sizeof(Dumb_String));
 	buf    = dumb_string_create(arena);
@@ -670,7 +670,7 @@ dumb_string_split_by_char(Dumb_Arena *arena, Dumb_String *str, char c)
 
 		if (current_char == c)
 		{
-			buf_2 = dumb_string_from(arena, buf._chars);
+			buf_2 = dumb_string_from(arena, (char *)buf._chars);
 			dumb_array_push(arena, &result, &buf_2);
 
 			buf = dumb_string_create(arena);
@@ -756,7 +756,7 @@ PRIVATE_dumb_string_change_capacity(Dumb_Arena *arena, Dumb_String *str, size_t 
 
 	/* @NOTE(Honza): Should this be count? Or Min(new_capacity, str->_capacity)? */
 	dumb_memcpy(tmp, str->_chars, str->_capacity);
-	str->_chars = (char *) tmp;
+	str->_chars = (unsigned char *) tmp;
 	str->_capacity = new_capacity;
 }
 
