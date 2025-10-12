@@ -4,7 +4,7 @@ dumb_lib.h - something like my personal "standard library"/"C extension".
 
 ===============================================================================
 
-version 0.5.0
+version 0.5.1
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -19,7 +19,6 @@ https://x.com/honza_kriz_bass
 	|SECTION| - README
 	|SECTION| - NOTES
 	|SECTION| - DOCUMENTATION
-	|SECTION| - COMPILE OPTIONS
 	|SECTION| - COMPILE CHECKS
 	|SECTION| - INCLUDES
 	|SECTION| - DECLARATIONS
@@ -107,23 +106,27 @@ For rationale to comply with C89 see [Dependable C](https://www.dependablec.org/
 	|SECTION| - DOCUMENTATION
 	----------------------------
 
-You MUST '#define DUMB_LIB_IMPLEMENTATION'
+- 1)
+You _MUST_ '#define DUMB_LIB_IMPLEMENTATION'
 in EXACTLY _one_ C or C++ file that includes this header, BEFORE the
 include, like this:
 
-   #define DUMB_LIB_IMPLEMENTATION
-   #include "dumb_lib.h"
+	#define DUMB_LIB_IMPLEMENTATION
+	#include "dumb_lib.h"
 
 All other files should just #include "dumb_lib.h" without the #define.
 
+- 2)
+You can '#define DUMB_DEBUG', which turns on DUMB_ASSERT().
+DUMB_ASSERT() does bounds checking on array access &
+makes sure you got valid memory from dumb_arena_create().
+Make sure you define it before including dumb_lib.h, like this:
+
+	#define DUMB_DEBUG
+	#define DUMB_LIB_IMPLEMENTATION
+	#include "dumb_lib.h"
+
 ============================================================================ */
-
-/*
-	|SECTION| - COMPILE OPTIONS
-	---------------------------
-*/
-
-#define DUMB_DEBUG 1
 
 /*
 	|SECTION| - COMPILE CHECKS
@@ -457,7 +460,6 @@ dumb_array_create_precise(Dumb_Arena *arena, size_t elem_size, size_t number_of_
 	a._elem_size = elem_size;
 	a._elements  = (unsigned char *)dumb_arena_push(arena, a._capacity);
 
-	/* @NOTE(Honza): Maybe check always? */
 	DUMB_ASSERT(a._elements != NULL)
 
 	return a;
@@ -531,7 +533,6 @@ dumb_array_get(Dumb_Array *a, size_t index)
 {
 	unsigned char *result;
 
-	/* @NOTE(Honza): Maybe check always? */
 	DUMB_ASSERT(index < a->_count)
 
 	result = a->_elements + (index * a->_elem_size);
@@ -556,14 +557,8 @@ dumb_string_create_precise(Dumb_Arena *arena, size_t capacity)
 	s._count     = 0;
 	s._capacity  = capacity;
 	s._chars     = (unsigned char *)dumb_arena_push(arena, s._capacity);
-/*
-	'malloc' doesn't initialize the memory,
-	so we do this to prevent weird interop issues with c strings.
-	Still costs a few instructions, but it should be less than 'calloc'.
-*/
 	s._chars[0]  = '\0';
 
-	/* @NOTE(Honza): Maybe check always? */
 	DUMB_ASSERT(s._chars != NULL)
 
 	return s;
@@ -751,7 +746,6 @@ PRIVATE_dumb_string_change_capacity(Dumb_Arena *arena, Dumb_String *str, size_t 
 {
 	void *tmp = dumb_arena_push(arena, new_capacity);
 
-	/* @NOTE(Honza): Maybe check always? */
 	DUMB_ASSERT(tmp != NULL)
 
 	/* @NOTE(Honza): Should this be count? Or Min(new_capacity, str->_capacity)? */

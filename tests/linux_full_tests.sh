@@ -14,7 +14,6 @@ echo
 echo '==> Compiling with "clang"...'
 clang -std=c89 -o ./build/TEST $path_c
 echo '==> Finished'
-
 echo '==> Running the tests...'
 ./build/TEST
 rm ./build/TEST
@@ -25,7 +24,6 @@ echo
 echo '==> Compiling with "gcc"...'
 gcc -std=c89 $path_c -o ./build/TEST
 echo '==> Finished'
-
 echo '==> Running the tests...'
 ./build/TEST
 rm ./build/TEST
@@ -36,7 +34,6 @@ echo
 echo '==> Compiling with "tcc"...'
 tcc $path_c -o ./build/TEST
 echo '==> Finished'
-
 echo '==> Running the tests...'
 ./build/TEST
 rm ./build/TEST
@@ -63,7 +60,6 @@ echo
 echo '==> Compiling with "clang"...'
 clang $path_cpp -o ./build/TEST
 echo '==> Finished'
-
 echo '==> Running the tests...'
 ./build/TEST
 rm ./build/TEST
@@ -74,7 +70,6 @@ echo
 echo '==> Compiling with "gcc"...'
 gcc $path_cpp -o ./build/TEST
 echo '==> Finished'
-
 echo '==> Running the tests...'
 ./build/TEST
 rm ./build/TEST

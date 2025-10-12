@@ -4,7 +4,7 @@ dumb_lib_tests.c - tests for dumb_lib.h
 
 ===============================================================================
 
-version 0.5.0
+version 0.5.1
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -39,6 +39,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <stdio.h>
 #include <string.h>
 
+#define DUMB_DEBUG
 #define DUMB_LIB_IMPLEMENTATION
 #include "../src/dumb_lib.h"
 

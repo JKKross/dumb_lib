@@ -28,40 +28,33 @@ echo === Compiling %path_c% with 'cl'...
 cl /utf-8 /validate-charset /nologo %path_c% /Fetest.exe
 echo === Finished
 echo === Running the tests...
-
 test.exe
 del /Q test.exe
 echo === Finished
 echo.
 
 echo === Compiling %path_c% with 'clang'...
-
 clang -std=c89 %path_c% -o test.exe
 echo === Finished
 echo === Running the tests...
-
 test.exe
 del /Q test.exe
 echo === Finished
 echo.
 
 echo === Compiling %path_c% with 'gcc'...
-
 gcc -std=c89 %path_c% -o test.exe
 echo === Finished
 echo === Running the tests...
-
 test.exe
 del /Q test.exe
 echo === Finished
 echo.
 
 echo === Compiling %path_c% with 'tcc'...
-
 tcc %path_c% -o test.exe
 echo === Finished
 echo === Running the tests...
-
 test.exe
 del /Q test.exe
 echo === Finished
@@ -88,29 +81,24 @@ echo === Compiling %path_cpp% with 'cl'...
 cl /utf-8 /validate-charset /nologo %path_cpp% /Fetest.exe
 echo === Finished
 echo === Running the tests...
-
 test.exe
 del /Q test.exe
 echo === Finished
 echo.
 
 echo === Compiling %path_cpp% with 'clang'...
-
 clang %path_cpp% -o test.exe
 echo === Finished
 echo === Running the tests...
-
 test.exe
 del /Q test.exe
 echo === Finished
 echo.
 
 echo === Compiling %path_cpp% with 'gcc'...
-
 gcc %path_cpp% -o test.exe
 echo === Finished
 echo === Running the tests...
-
 test.exe
 del /Q test.exe
 echo === Finished
