@@ -4,7 +4,7 @@ dumb_lib_tests.c - tests for dumb_lib.h
 
 ===============================================================================
 
-version 0.5.1
+version 0.5.2
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -90,7 +90,8 @@ mem_test(void)
 	double arr_1[ARRAY_LEN];
 	double arr_2[ARRAY_LEN];
 
-	int i, result;
+	int i;
+	Dumb_Comparison_Result result;
 
 	unsigned long a, b;
 
@@ -113,16 +114,16 @@ mem_test(void)
 
 	/* PART II: dumb_memcmp */
 	result = dumb_memcmp(arr_1, arr_2, (ARRAY_LEN * sizeof(double)));
-	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (result != A_EQUALS_B) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	a = 0xFFFFFFFF;
 	b = 0xFFF0FFFF;
 
 	result = dumb_memcmp(&a, &b, sizeof(unsigned long));
-	if (result != 1) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (result != A_GREATER_THEN_B) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	result = dumb_memcmp(&b, &a, sizeof(unsigned long));
-	if (result != -1) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (result != A_LESS_THEN_B) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* PART III: dumb_memset */
 	dumb_memset(arr_1, 0, (ARRAY_LEN * sizeof(double)));
@@ -666,9 +667,9 @@ void
 string_compare_test(void)
 {
 	int passed;
+	Dumb_Comparison_Result result;
 
 	Dumb_Arena *arena;
-	int result;
 	Dumb_String str_a;
 	Dumb_String str_b;
 
@@ -682,35 +683,35 @@ string_compare_test(void)
 	str_b = dumb_string_from(arena, "Hello, sailor!");
 
 	result = dumb_string_compare(&str_a, &str_b);
-	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (result != A_EQUALS_B) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* Part II: */
 	str_a = dumb_string_from(arena, "Hello, sailor!");
 	str_b = dumb_string_from(arena, "Hello, tailor!");
 
 	result = dumb_string_compare(&str_a, &str_b);
-	if (result != -1) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (result != A_LESS_THEN_B) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* Part III: */
 	str_a = dumb_string_from(arena, "Žluťoučký kůň skáče do dáli... 😊");
 	str_b = dumb_string_from(arena, "Žluťoučký kůň skáče do dáli... 😊");
 
 	result = dumb_string_compare(&str_a, &str_b);
-	if (result != 0) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (result != A_EQUALS_B) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* Part IV: */
 	str_a = dumb_string_from(arena, "Ž");
 	str_b = dumb_string_from(arena, "Z");
 
 	result = dumb_string_compare(&str_a, &str_b);
-	if (result != 1) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (result != A_GREATER_THEN_B) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	/* Part V: */
 	str_a = dumb_string_from(arena, "Aragorn");
 	str_b = dumb_string_from(arena, "Gimli");
 
 	result = dumb_string_compare(&str_a, &str_b);
-	if (result != -1) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (result != A_LESS_THEN_B) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_arena_destroy(arena);
 
