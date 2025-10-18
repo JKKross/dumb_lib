@@ -34,14 +34,14 @@ For rationale to comply with C89 see [Dependable C](https://www.dependablec.org/
 - If you are wondering why I decided to use single-header style for the libraries, see
 [Sean Barrett's explanation](https://github.com/nothings/stb?tab=readme-ov-file#why-single-file-headers)
 
-### Tests
-
-See [TEST\_LOG.txt](TEST_LOG.txt)
-
 ## Libraries:
 
 ### dumb\_lib.h
 The original library, what I consider to be the "core" - memcpy, memcmp & memset, Memory Arena, Dynamic Array, String.
 
+Tests: [TEST\_LOG_\_dumb\_lib.txt](TEST_LOG_dumb_lib.txt)
+
 ### dumb\_file.h
 Basic file I/O & utilities.
+
+Tests: [TEST\_LOG_\_dumb\_file.txt](TEST_LOG_dumb_file.txt)
