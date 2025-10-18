@@ -1,6 +1,6 @@
 /* ============================================================================
 
-dumb_lib_tests.c - tests for dumb_lib.h
+dumb_lib_tests.c - tests for dumb_lib(raries) collection.
 
 ===============================================================================
 
@@ -43,8 +43,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #define DUMB_LIB_IMPLEMENTATION
 #include "../src/dumb_lib.h"
 
+#define DUMB_FILE_IMPLEMENTATION
+#include "../src/dumb_file.h"
+
 #define DUMB_PRINT_FAILURE() { printf("\n - FAIL ON LINE %-34d", __LINE__); }
 
+/* --- dumb_lib.h function declarations --- */
 void mem_test(void);
 void arena_test(void);
 
@@ -60,27 +64,44 @@ void string_split_by_char_test(void);
 void string_trim_whitespace_test(void);
 void string_compare_test(void);
 
+/* --- dumb_file.h function declarations --- */
+void file_read_bytes_test(void);
+void file_save_bytes_test(void);
+void file_exists_test(void);
+
 int
 main(void)
 {
-	mem_test();
-	arena_test();
+	/* --- run dumb_lib.h tests --- */
+	if (1)
+	{
+		mem_test();
+		arena_test();
 
-	array_add_get_test();
-	array_add_get_large_test();
-	array_pop_test();
+		array_add_get_test();
+		array_add_get_large_test();
+		array_pop_test();
 
-	string_from_test();
-	string_create_append_string_test();
-	string_create_push_pop_test();
-	string_utf8_test();
-	string_split_by_char_test();
-	string_trim_whitespace_test();
-	string_compare_test();
+		string_from_test();
+		string_create_append_string_test();
+		string_create_push_pop_test();
+		string_utf8_test();
+		string_split_by_char_test();
+		string_trim_whitespace_test();
+		string_compare_test();
+	}
 
+	/* --- run dumb_file.h tests --- */
+	if (1)
+	{
+		file_read_bytes_test();
+		file_save_bytes_test();
+		file_exists_test();
+	}
 	return 0;
 }
 
+/* --- dumb_lib.h function definitions --- */
 void
 mem_test(void)
 {
@@ -714,6 +735,133 @@ string_compare_test(void)
 	if (result != A_LESS_THEN_B) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	dumb_arena_destroy(arena);
+
+	if (passed) { printf("%50s", "\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("%50s", "\033[1;31mFAILED\033[0m\n"); }
+}
+
+/* --- dumb_file.h function definitions --- */
+void
+file_read_bytes_test(void)
+{
+	int passed, i;
+	unsigned char current_byte;
+
+	Dumb_File_Result result;
+
+	Dumb_Arena *arena;
+	Dumb_Array  array;
+
+	#define FILE_CONTENTS_SIZE 15
+	unsigned char file_contents_should_be[FILE_CONTENTS_SIZE];
+
+	printf("%-50s", "Running 'file_read_bytes_test()'... ");
+
+	passed = 1;
+
+	arena = dumb_arena_create(0);
+	array = dumb_array_create(arena, sizeof(unsigned char));
+
+	file_contents_should_be[0]  = 'H';
+	file_contents_should_be[1]  = 'e';
+	file_contents_should_be[2]  = 'l';
+	file_contents_should_be[3]  = 'l';
+	file_contents_should_be[4]  = 'o';
+	file_contents_should_be[5]  = ',';
+	file_contents_should_be[6]  = ' ';
+	file_contents_should_be[7]  = 's';
+	file_contents_should_be[8]  = 'a';
+	file_contents_should_be[9]  = 'i';
+	file_contents_should_be[10] = 'l';
+	file_contents_should_be[11] = 'o';
+	file_contents_should_be[12] = 'r';
+	file_contents_should_be[13] = '!';
+	file_contents_should_be[14] = '\n';
+
+	result = dumb_file_read_bytes("../dumb_file_test_files/TEST_FILE_001.txt",
+	                              array._elements,
+	                              array._capacity,
+	                              &array._count);
+
+	if (result != DUMB_FILE_SUCCESS)        { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (array._count != FILE_CONTENTS_SIZE) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	for (i = 0; i < FILE_CONTENTS_SIZE; i++)
+	{
+		current_byte = *(unsigned char *)dumb_array_get(&array, i);
+		if (current_byte != file_contents_should_be[i])
+		{
+			passed = 0;
+			DUMB_PRINT_FAILURE();
+		}
+	}
+
+	dumb_arena_destroy(arena);
+
+	if (passed) { printf("%50s", "\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("%50s", "\033[1;31mFAILED\033[0m\n"); }
+}
+
+void
+file_save_bytes_test(void)
+{
+	int passed;
+
+	Dumb_File_Result result;
+	Dumb_Comparison_Result comparison_result;
+
+	Dumb_Arena  *arena;
+	Dumb_String  str;
+	Dumb_String  str_buf;
+
+	printf("%-50s", "Running 'file_save_bytes_test()'... ");
+
+	passed = 1;
+
+	arena = dumb_arena_create(0);
+
+	#define TEST_STRING "This is a test string, that we should write."
+	#define TEST_FILENAME "FILE_SAVE_BYTES_TEST.txt"
+	str = dumb_string_from(arena, TEST_STRING);
+
+	result = dumb_file_save_bytes(TEST_FILENAME, str._chars, str._count, DUMB_FILE_OVER_WRITE);
+
+	if (result != DUMB_FILE_SUCCESS) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	str_buf = dumb_string_create_precise(arena, 2048);
+
+	result = dumb_file_read_bytes(TEST_FILENAME,
+	                              str_buf._chars,
+	                              str_buf._capacity,
+	                              &str_buf._count);
+
+	if (result != DUMB_FILE_SUCCESS) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	comparison_result = dumb_string_compare(&str, &str_buf);
+
+	if (comparison_result != A_EQUALS_B) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	dumb_arena_destroy(arena);
+
+	if (passed) { printf("%50s", "\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("%50s", "\033[1;31mFAILED\033[0m\n"); }
+}
+
+void
+file_exists_test(void)
+{
+	int passed;
+	Dumb_File_Result result;
+
+	printf("%-50s", "Running 'file_exists_test()'... ");
+
+	passed = 1;
+
+	result = dumb_file_exists("../dumb_lib_tests.c");
+	if (result != DUMB_FILE_EXISTS) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	result = dumb_file_exists("../_hiufeophoefqefquhipfef_.wfejoni");
+	if (result != DUMB_FILE_DOES_NOT_EXIST) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	if (passed) { printf("%50s", "\033[1;32mPASSED\033[0m\n"); }
 	else        { printf("%50s", "\033[1;31mFAILED\033[0m\n"); }
