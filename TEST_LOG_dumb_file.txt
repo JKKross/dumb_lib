@@ -12,4 +12,7 @@
 | YES    | 2025/10/19 | x86-64       | Linux (Debian 13) | Debian clang version 19.1.7 (3+b1)                                      |
 | YES    | 2025/10/19 | x86-64       | Linux (Debian 13) | gcc (Debian 14.2.0-19) 14.2.0                                           |
 | YES    | 2025/10/19 | x86-64       | Linux (Debian 13) | tcc version 0.9.27 (x86_64 Linux)                                       |
+| YES    | 2025/10/19 | x86 (i386)   | Linux (Debian 12) | Debian clang version 14.0.6                                             |
+| YES    | 2025/10/19 | x86 (i386)   | Linux (Debian 12) | gcc (Debian 12.2.0-14+deb12u1) 12.2.0                                   |
+| YES    | 2025/10/19 | x86 (i386)   | Linux (Debian 12) | tcc version 0.9.27 (i386 Linux)                                         |
 ------------------------------------------------------------------------------------------------------------------------------------
