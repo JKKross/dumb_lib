@@ -39,9 +39,9 @@ For rationale to comply with C89 see [Dependable C](https://www.dependablec.org/
 ### dumb\_lib.h
 The original library, what I consider to be the "core" - memcpy, memcmp & memset, Memory Arena, Dynamic Array, String.
 
-Tests: [TEST\_LOG_\_dumb\_lib.txt](TEST_LOG_dumb_lib.txt)
+Tests: [TEST\_LOG\_dumb\_lib.txt](TEST_LOG_dumb_lib.txt)
 
 ### dumb\_file.h
 Basic file I/O & utilities.
 
-Tests: [TEST\_LOG_\_dumb\_file.txt](TEST_LOG_dumb_file.txt)
+Tests: [TEST\_LOG\_dumb\_file.txt](TEST_LOG_dumb_file.txt)
