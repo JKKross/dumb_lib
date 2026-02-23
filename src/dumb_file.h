@@ -4,7 +4,7 @@ dumb_file.h - basic file I/O & utilities.
 
 ===============================================================================
 
-version 0.1.0
+version 0.1.1
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -118,8 +118,6 @@ typedef enum Dumb_File_Result {
 	DUMB_FILE_UNKNOWN_FAILURE,
 	DUMB_FILE_COULD_NOT_BE_OPENED,
 	DUMB_FILE_COULD_NOT_BE_CLOSED,
-	DUMB_FILE_EXISTS,
-	DUMB_FILE_DOES_NOT_EXIST,
 	DUMB_FILE_CANNOT_WRITE,
 } Dumb_File_Result;
 
@@ -130,7 +128,7 @@ typedef enum Dumb_File_Write_Mode {
 
 /* --- |FUNCTIONS| --- */
 
-Dumb_File_Result dumb_file_exists(char *path);
+int              dumb_file_exists(char *path);
 Dumb_File_Result dumb_file_read_bytes(char *path, unsigned char *output_buffer, size_t output_buffer_capacity, size_t *bytes_read);
 Dumb_File_Result dumb_file_save_bytes(char *path, unsigned char *bytes, size_t num_bytes, Dumb_File_Write_Mode write_mode);
 
@@ -143,7 +141,12 @@ Dumb_File_Result dumb_file_save_bytes(char *path, unsigned char *bytes, size_t n
 
 /* --- |FUNCTIONS| --- */
 
-Dumb_File_Result
+/*
+Returns 1 if the file exists
+Returns 0 if the file does not exist
+Returns -1 on error (check implementation)
+ */
+int
 dumb_file_exists(char *path)
 {
 	int result;
@@ -157,7 +160,7 @@ dumb_file_exists(char *path)
 
 	if (file == NULL)
 	{
-		return DUMB_FILE_DOES_NOT_EXIST;
+		return 0;
 	}
 	else
 	{
@@ -165,12 +168,12 @@ dumb_file_exists(char *path)
 		/* @TODO(Honza):
 		   Should rewrite this in OS specific implementation,
 		   since fclose can fail & the user should not get
-		   DUMB_FILE_COULD_NOT_BE_CLOSED when simply asking if a
+		   an error when simply asking if a
 		   file exists.
 		*/
-		if (result != 0) { return DUMB_FILE_COULD_NOT_BE_CLOSED; }
+		if (result != 0) { return -1; }
 
-		return DUMB_FILE_EXISTS;
+		return 1;
 	}
 }
 

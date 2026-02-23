@@ -4,7 +4,6 @@ dumb_lib_tests.c - tests for dumb_lib(raries) collection.
 
 ===============================================================================
 
-version 0.5.2
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -851,17 +850,18 @@ void
 file_exists_test(void)
 {
 	int passed;
-	Dumb_File_Result result;
+	int result;
 
 	printf("%-50s", "Running 'file_exists_test()'... ");
 
 	passed = 1;
 
 	result = dumb_file_exists("../dumb_lib_tests.c");
-	if (result != DUMB_FILE_EXISTS) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (result == 0) { passed = 0; DUMB_PRINT_FAILURE(); }
 
+	/* There should be no way for a file with this name to exist there. */
 	result = dumb_file_exists("../_hiufeophoefqefquhipfef_.wfejoni");
-	if (result != DUMB_FILE_DOES_NOT_EXIST) { passed = 0; DUMB_PRINT_FAILURE(); }
+	if (result == 1) { passed = 0; DUMB_PRINT_FAILURE(); }
 
 	if (passed) { printf("%50s", "\033[1;32mPASSED\033[0m\n"); }
 	else        { printf("%50s", "\033[1;31mFAILED\033[0m\n"); }
