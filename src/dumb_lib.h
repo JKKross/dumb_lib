@@ -101,7 +101,7 @@ Make sure you define it before including dumb_lib.h, like this:
 If you wish to proceed, read through the source, run the tests & make sure everything works correctly!
 #endif
 
-#if !(defined(_WIN32) || defined(__linux__))
+#if !(defined(_WIN64) || defined(__linux__))
 	#error THIS LIBRARY HAS NOT BEEN TESTED ON THIS PLATFORM! \
 If you wish to proceed, read through the source, run the tests & make sure everything works correctly!
 #endif
