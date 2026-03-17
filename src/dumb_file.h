@@ -4,7 +4,7 @@ dumb_file.h - basic file I/O & utilities.
 
 ===============================================================================
 
-version 0.1.1
+version 0.1.2
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -81,7 +81,7 @@ All other files should just #include "dumb_file.h" without the #define.
 If you wish to proceed, read through the source, run the tests & make sure everything works correctly!
 #endif
 
-#if !(defined(_WIN32) || defined(__linux__))
+#if !(defined(_WIN64) || defined(__linux__))
 	#error THIS LIBRARY HAS NOT BEEN TESTED ON THIS PLATFORM! \
 If you wish to proceed, read through the source, run the tests & make sure everything works correctly!
 #endif
@@ -128,6 +128,8 @@ typedef enum Dumb_File_Write_Mode {
 
 /* --- |FUNCTIONS| --- */
 
+void             dumb_file_windows_path_to_unix_path(char *path);
+void             dumb_file_unix_path_to_windows_path(char *path);
 int              dumb_file_exists(char *path);
 Dumb_File_Result dumb_file_read_bytes(char *path, unsigned char *output_buffer, size_t output_buffer_capacity, size_t *bytes_read);
 Dumb_File_Result dumb_file_save_bytes(char *path, unsigned char *bytes, size_t num_bytes, Dumb_File_Write_Mode write_mode);
@@ -140,6 +142,26 @@ Dumb_File_Result dumb_file_save_bytes(char *path, unsigned char *bytes, size_t n
 #ifdef DUMB_FILE_IMPLEMENTATION
 
 /* --- |FUNCTIONS| --- */
+
+void
+dumb_file_windows_path_to_unix_path(char *path)
+{
+	while (*path != '\0')
+	{
+		if (*path == '\\') { *path = '/'; }
+		path++;
+	}
+}
+
+void
+dumb_file_unix_path_to_windows_path(char *path)
+{
+	while (*path != '\0')
+	{
+		if (*path == '/') { *path = '\\'; }
+		path++;
+	}
+}
 
 /*
 Returns 1 if the file exists

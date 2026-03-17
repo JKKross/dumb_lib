@@ -64,6 +64,7 @@ void string_trim_whitespace_test(void);
 void string_compare_test(void);
 
 /* --- dumb_file.h function declarations --- */
+void file_convert_paths_test(void);
 void file_read_bytes_test(void);
 void file_save_bytes_test(void);
 void file_exists_test(void);
@@ -93,10 +94,12 @@ main(void)
 	/* --- run dumb_file.h tests --- */
 	if (1)
 	{
+		file_convert_paths_test();
 		file_read_bytes_test();
 		file_save_bytes_test();
 		file_exists_test();
 	}
+	printf("ALL TESTS FINISHED; EXITING...\n");
 	return 0;
 }
 
@@ -740,6 +743,49 @@ string_compare_test(void)
 }
 
 /* --- dumb_file.h function definitions --- */
+void
+file_convert_paths_test(void)
+{
+	int passed;
+	Dumb_Comparison_Result result;
+
+	Dumb_Arena *arena;
+	Dumb_String test_path;
+
+	#define WINDOWS_PATH_CONSTANT "Some\\Path\\With\\some spaces and stuff\\"
+	#define UNIX_PATH_CONSTANT    "Some/Path/With/some spaces and stuff/"
+
+	printf("%-50s", "Running 'file_convert_paths_test()'... ");
+
+	passed = 1;
+	arena = dumb_arena_create(512);
+
+	/* Part I: */
+	test_path = dumb_string_from(arena, WINDOWS_PATH_CONSTANT);
+	dumb_file_windows_path_to_unix_path((char *)test_path._chars);
+
+	result = dumb_memcmp((void *)test_path._chars,
+	                     (void *)UNIX_PATH_CONSTANT,
+	                     test_path._count);
+
+	if (result != A_EQUALS_B) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	/* Part II: */
+	test_path = dumb_string_from(arena, UNIX_PATH_CONSTANT);
+	dumb_file_unix_path_to_windows_path((char *)test_path._chars);
+
+	result = dumb_memcmp((void *)test_path._chars,
+	                     (void *)WINDOWS_PATH_CONSTANT,
+	                     test_path._count);
+
+	if (result != A_EQUALS_B) { passed = 0; DUMB_PRINT_FAILURE(); }
+
+	dumb_arena_destroy(arena);
+
+	if (passed) { printf("%50s", "\033[1;32mPASSED\033[0m\n"); }
+	else        { printf("%50s", "\033[1;31mFAILED\033[0m\n"); }
+}
+
 void
 file_read_bytes_test(void)
 {
