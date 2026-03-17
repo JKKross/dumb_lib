@@ -3,8 +3,8 @@
 rm -rf build
 mkdir build
 
-path_c="./dumb_lib_tests.c"
-path_cpp="./dumb_lib_tests.cpp"
+path_c='./dumb_lib_tests.c'
+path_cpp='./dumb_lib_tests.cpp'
 
 echo '====================='
 echo '====== C tests ======'
