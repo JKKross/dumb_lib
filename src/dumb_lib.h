@@ -2,12 +2,12 @@
 
 dumb_lib.h - something like my personal "standard library"/"C extension".
 dumb_memset, dumb_memcpy, dumb_memcmp, Dumb_Arena, Dumb_Array & Dumb_String.
-This library depends on stdlib.h - for malloc/calloc & free only.
+This library depends on stdlib.h - for calloc & free only.
 If you want to know more, see: https://github.com/JKKross/dumb_lib/
 
 ===============================================================================
 
-version 0.5.2
+version 0.5.3
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -111,7 +111,7 @@ If you wish to proceed, read through the source, run the tests & make sure every
 	--------------------
 */
 
-/* @NOTE(Honza): For malloc/calloc & free only! */
+/* @NOTE(Honza): For calloc & free only! */
 #include <stdlib.h>
 
 /*
@@ -143,6 +143,13 @@ extern "C" {
 	#define DUMB_ASSERT(condition)
 #endif
 
+#if (__GNUC__ || __CLANG__ || __TINYC__ )
+	#warning DUMB_KB(n), DUMB_MB(n), DUMB_GB(n) & DUMB_TB(n) macros are deprecated, and will be removed in v0.6. They can be found in dumb_file.h since v 0.1.3.
+#endif
+
+/* --- WARNING ---
+DUMB_KB(n), DUMB_MB(n), DUMB_GB(n) & DUMB_TB(n) macros are deprecated, and will be removed in v0.6.
+They can be found in dumb_file.h since v 0.1.3. */
 #define DUMB_KB(n)  (n * 1024)
 #define DUMB_MB(n)  (n * 1048576)
 #define DUMB_GB(n)  (n * 1073741824)
@@ -159,7 +166,8 @@ typedef enum Dumb_Comparison_Result
 
 typedef struct Dumb_Arena Dumb_Arena;
 
-struct Dumb_Arena {
+struct Dumb_Arena
+{
 	Dumb_Arena    *_previous; /* Set to NULL on the very first arena in chain. */
 	Dumb_Arena    *_current;  /* Set to NULL on all arenas except the very first one in chain. */
 	size_t         _capacity;
@@ -167,14 +175,16 @@ struct Dumb_Arena {
 	unsigned char *_memory;
 };
 
-typedef struct Dumb_Array {
+typedef struct Dumb_Array
+{
 	size_t         _count;
 	size_t         _capacity;
 	size_t         _elem_size;
 	unsigned char *_elements;
 } Dumb_Array;
 
-typedef struct Dumb_String {
+typedef struct Dumb_String
+{
 	size_t         _count;
 	size_t         _capacity;
 	unsigned char *_chars;
@@ -228,8 +238,11 @@ void
 dumb_memcpy(void *to, void *from, size_t num_bytes)
 {
 	size_t i;
-	unsigned char *to_char   = (unsigned char *) to;
-	unsigned char *from_char = (unsigned char *) from;
+	unsigned char *to_char;
+	unsigned char *from_char;
+
+	to_char   = (unsigned char *) to;
+	from_char = (unsigned char *) from;
 
 	for (i = 0; i < num_bytes; i++)
 	{
@@ -241,8 +254,11 @@ Dumb_Comparison_Result
 dumb_memcmp(void *a, void *b, size_t num_bytes)
 {
 	size_t i;
-	unsigned char *aa = (unsigned char *) a;
-	unsigned char *bb = (unsigned char *) b;
+	unsigned char *aa;
+	unsigned char *bb;
+
+	aa = (unsigned char *) a;
+	bb = (unsigned char *) b;
 
 	for (i = 0; i < num_bytes; i++)
 	{
@@ -537,9 +553,11 @@ dumb_string_create_precise(Dumb_Arena *arena, size_t capacity)
 Dumb_String
 dumb_string_from(Dumb_Arena *arena, const char *str)
 {
-	Dumb_String s = dumb_string_create_precise(arena, DUMB_DEFAULT_STRING_SIZE_BYTES);
+	size_t i;
+	Dumb_String s;
 
-	size_t i = 0;
+	i = 0;
+	s = dumb_string_create_precise(arena, DUMB_DEFAULT_STRING_SIZE_BYTES);
 
 	while (str[i] != '\0')
 	{
@@ -628,7 +646,6 @@ dumb_string_split_by_char(Dumb_Arena *arena, Dumb_String *str, unsigned char c)
 	result = dumb_array_create(arena, sizeof(Dumb_String));
 	buf    = dumb_string_create(arena);
 
-
 	for (i = 0; i < str->_count; i++)
 	{
 		current_char = str->_chars[i];
@@ -714,7 +731,9 @@ dumb_string_compare(Dumb_String *str_a, Dumb_String *str_b)
 void
 PRIVATE_dumb_string_change_capacity(Dumb_Arena *arena, Dumb_String *str, size_t new_capacity)
 {
-	void *tmp = dumb_arena_push(arena, new_capacity);
+	void *tmp;
+
+	tmp = dumb_arena_push(arena, new_capacity);
 
 	DUMB_ASSERT(tmp != NULL)
 
