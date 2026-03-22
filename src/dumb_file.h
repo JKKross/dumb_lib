@@ -4,7 +4,7 @@ dumb_file.h - basic file I/O & utilities.
 
 ===============================================================================
 
-version 0.1.2
+version 0.1.3
 Copyright © 2025 Honza Kříž
 
 https://github.com/JKKross
@@ -111,9 +111,17 @@ specific behaviour away.
 extern "C" {
 #endif
 
+/* --- |MACROS| --- */
+
+#define DUMB_FILE_KB(n)  (n * 1024)
+#define DUMB_FILE_MB(n)  (n * 1048576)
+#define DUMB_FILE_GB(n)  (n * 1073741824)
+#define DUMB_FILE_TB(n)  (n * 1099511627776)
+
 /* --- |TYPES| --- */
 
-typedef enum Dumb_File_Result {
+typedef enum Dumb_File_Result
+{
 	DUMB_FILE_SUCCESS,
 	DUMB_FILE_UNKNOWN_FAILURE,
 	DUMB_FILE_COULD_NOT_BE_OPENED,
@@ -121,7 +129,8 @@ typedef enum Dumb_File_Result {
 	DUMB_FILE_CANNOT_WRITE,
 } Dumb_File_Result;
 
-typedef enum Dumb_File_Write_Mode {
+typedef enum Dumb_File_Write_Mode
+{
 	DUMB_FILE_APPEND,
 	DUMB_FILE_OVER_WRITE,
 } Dumb_File_Write_Mode;
