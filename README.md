@@ -21,13 +21,14 @@ but don't know where to start are:
 + Read the ["K&R C" book](https://en.wikipedia.org/wiki/The_C_Programming_Language) - a
 lot of the concepts & practices are outdated, but it's still a great resource for anything C, in my opinion.
 + Casey Muratori's ["Handmade Hero"](https://youtu.be/Ee3EtYb8d1o) series (first 20-50 episodes is all you need to get going).
++ Eskil Steenberg's ["How I program C"](https://youtu.be/443UNeGrFoM).
 + Ryan Fleury's blog ["Digital Grove"](https://substack.com/@rfleury/posts) &
-[RadDebugger's source code.](https://github.com/EpicGamesExt/raddebugger)
+[RadDebugger's source code](https://github.com/EpicGamesExt/raddebugger).
 
 Also worth checking out:
 + Sean Barrett's ["stb libraries"](https://github.com/nothings/stb).
 + Jonathan Blow's ["Preventing the Collapse of Civilization"](https://www.youtube.com/watch?v=ZSRHeXYDLko) talk.
-+ Eskill Steenberg's ["You Should Finish your Software"](https://www.youtube.com/watch?v=EGLoKbBn-VI) talk from Better Software Conference.
++ ["Better Software Conference"](https://youtube.com/@bettersoftwareconference) YouTube channel.
 + Stanford lecture series ["Programming Paradigms"](https://www.youtube.com/playlist?list=PLD28639E2FFC4B86A).
 
 Alas, if you insist on using any of these libraries,
@@ -58,7 +59,7 @@ For more rationale to comply with C89 see [Dependable C](https://www.dependablec
 
 Since I'm still experimenting and the libs are not even close to being stable,
 there's intentionally not much documentation at the moment.
-What little documentation ther is can be found in the source files themselves
+What little documentation there is can be found in the source files themselves
 (including how to properly include the desired library in the project).
 
 ## Libraries
