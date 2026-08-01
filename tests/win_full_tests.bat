@@ -51,14 +51,6 @@ del /Q test.exe
 echo === Finished
 echo.
 
-echo === Compiling %path_c% with 'tcc'...
-tcc %path_c% -o test.exe
-echo === Finished
-echo === Running the tests...
-test.exe
-del /Q test.exe
-echo === Finished
-
 echo.
 echo ==============================
 echo ====== C tests finished ======

@@ -35,18 +35,6 @@ echo '==> Finished'
 echo
 
 echo
-echo '==> Compiling with "tcc"...'
-tcc $path_c -o ./build/TEST
-echo '==> Finished'
-echo '==> Running the tests...'
-cd ./build
-./TEST
-cd ..
-rm ./build/TEST
-echo '==> Finished'
-echo
-
-echo
 echo '=============================='
 echo '====== C tests finished ======'
 echo '=============================='

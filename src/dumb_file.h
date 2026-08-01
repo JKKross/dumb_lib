@@ -76,14 +76,23 @@ All other files should just #include "dumb_file.h" without the #define.
 	--------------------------
 */
 
-#if !(__GNUC__ || __CLANG__ || _MSC_VER || __TINYC__ )
+/* Compiler check */
+#if !(defined(__GNUC__)  || \
+      defined(__CLANG__) || \
+      defined(_MSC_VER))
+
 	#error YOU ARE USING A COMPILER THIS LIBRARY WAS NOT TESTED WITH! \
 If you wish to proceed, read through the source, run the tests & make sure everything works correctly!
+
 #endif
 
-#if !(defined(_WIN64) || defined(__linux__))
+/* Platform check */
+#if !(defined(_WIN64)    || \
+      defined(__linux__))
+
 	#error THIS LIBRARY HAS NOT BEEN TESTED ON THIS PLATFORM! \
 If you wish to proceed, read through the source, run the tests & make sure everything works correctly!
+
 #endif
 
 /*
