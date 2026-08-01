@@ -5,7 +5,7 @@ dumb_file.h - basic file I/O & utilities.
 ===============================================================================
 
 version 0.1.3
-Copyright © 2025 Honza Kříž
+Copyright © 2026 Honza Kříž
 
 https://github.com/JKKross
 https://x.com/honza_kriz_bass
@@ -32,7 +32,7 @@ https://x.com/honza_kriz_bass
 The MIT License (MIT)
 ---------------------
 
-Copyright © 2025 Honza Kříž
+Copyright © 2026 Honza Kříž
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the “Software”),

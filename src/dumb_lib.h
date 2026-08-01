@@ -8,7 +8,7 @@ If you want to know more, see: https://github.com/JKKross/dumb_lib/
 ===============================================================================
 
 version 0.6.0
-Copyright © 2025 Honza Kříž
+Copyright © 2026 Honza Kříž
 
 https://github.com/JKKross
 https://x.com/honza_kriz_bass
@@ -42,7 +42,7 @@ https://x.com/honza_kriz_bass
 The MIT License (MIT)
 ---------------------
 
-Copyright © 2025 Honza Kříž
+Copyright © 2026 Honza Kříž
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the “Software”),
@@ -135,7 +135,7 @@ extern "C" {
 /* --- |CONSTANTS| --- */
 
 /* Defaults */
-#define DUMB_ARENA_MIN_CAPACITY         4096 /* Memory page size on most computers in 2025 */
+#define DUMB_ARENA_MIN_CAPACITY         4096 /* Memory page size on most computers in 2026 */
 #define DUMB_DEFAULT_ARRAY_SIZE         256  /* No reason so far */
 #define DUMB_DEFAULT_STRING_SIZE_BYTES  32   /* No reason so far */
 
